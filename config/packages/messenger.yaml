@@ -1,0 +1,31 @@
+framework:
+    messenger:
+        failure_transport: failed
+
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    auto_setup: false
+                    use_notify: true          # PostgreSQL LISTEN/NOTIFY – kein Polling
+                    check_delayed_interval: 60000
+                    get_notify_timeout: 30000
+                    queue_name: leichte_sprache
+                    redeliver_timeout: 300
+                retry_strategy:
+                    max_retries: 3
+                    delay: 5000
+                    multiplier: 3
+                    max_delay: 300000
+
+            failed:
+                dsn: 'doctrine://default?queue_name=failed'
+
+        routing:
+            'App\Message\TranslationJobMessage': async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                async: 'in-memory://'

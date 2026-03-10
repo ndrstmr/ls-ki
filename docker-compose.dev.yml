@@ -1,0 +1,34 @@
+# Lokale Entwicklung ohne GPU/vLLM
+# Verwendung: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# Unterschiede zu Produktion:
+# - Kein vLLM-Container
+# - LLM_PROVIDER=mock (simulierter LLM)
+# - messenger_worker wartet nicht auf vLLM-Healthcheck
+# - PHP im dev-Modus mit Source-Mount
+
+services:
+  php:
+    build:
+      target: production
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      LLM_PROVIDER: mock
+    volumes:
+      - .:/var/www/html  # Source-Mount für Live-Reload
+      - /var/www/html/vendor  # vendor nicht überschreiben
+
+  messenger_worker:
+    environment:
+      APP_ENV: dev
+      LLM_PROVIDER: mock
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # vllm-Abhängigkeit entfernen
+
+  vllm:
+    # Im Dev-Modus nicht starten
+    profiles:
+      - gpu

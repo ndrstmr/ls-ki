@@ -1,0 +1,149 @@
+services:
+
+  # ─── Nginx Reverse Proxy ──────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - app_public:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/certs:/etc/ssl/certs:ro
+    depends_on:
+      php:
+        condition: service_started
+    networks:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  # ─── PHP-FPM (Symfony-Applikation) ───────────────────────────────────────
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    volumes:
+      - app_public:/var/www/html/public
+      - shared_storage:/var/www/html/var/storage
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      DATABASE_URL: "postgresql://app:${DB_PASSWORD}@postgres:5432/app?serverVersion=17"
+      MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
+      LLM_PROVIDER: "${LLM_PROVIDER:-vllm}"
+      VLLM_API_URL: "http://vllm:8000"
+      VLLM_API_KEY: "${VLLM_API_KEY:-}"
+      APP_ACTIVE_MODEL: "${MODEL_ID:-casperhansen/llama-3.3-70b-instruct-awq}"
+      PROMPT_VERSION: "${PROMPT_VERSION:-v1.0}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+      - ai_network
+    restart: unless-stopped
+
+  # ─── Symfony Messenger Worker (Async-Übersetzungsjobs) ───────────────────
+  messenger_worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    command: >
+      php bin/console messenger:consume async
+      --time-limit=3600
+      --memory-limit=256M
+      -vv
+    volumes:
+      - shared_storage:/var/www/html/var/storage
+    environment:
+      APP_ENV: prod
+      DATABASE_URL: "postgresql://app:${DB_PASSWORD}@postgres:5432/app?serverVersion=17"
+      MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
+      LLM_PROVIDER: "${LLM_PROVIDER:-vllm}"
+      VLLM_API_URL: "http://vllm:8000"
+      VLLM_API_KEY: "${VLLM_API_KEY:-}"
+      APP_ACTIVE_MODEL: "${MODEL_ID:-casperhansen/llama-3.3-70b-instruct-awq}"
+      PROMPT_VERSION: "${PROMPT_VERSION:-v1.0}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vllm:
+        condition: service_healthy
+    networks:
+      - backend
+      - ai_network
+    deploy:
+      replicas: 2
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  # ─── PostgreSQL 17 ────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/custom.conf:/etc/postgresql/custom.conf:ro
+    command: postgres -c config_file=/etc/postgresql/custom.conf
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "app", "-d", "app"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+    restart: unless-stopped
+
+  # ─── vLLM GPU Inference ───────────────────────────────────────────────────
+  vllm:
+    image: vllm/vllm-openai:v0.16.0
+    volumes:
+      - ${HF_CACHE_DIR:-/opt/models/huggingface}:/root/.cache/huggingface
+    environment:
+      HF_TOKEN: ${HF_TOKEN}
+    ipc: host  # Pflicht: PyTorch Shared Memory (Docker-Default 64MB reicht nicht)
+    command: >
+      --model ${MODEL_ID:-casperhansen/llama-3.3-70b-instruct-awq}
+      --gpu-memory-utilization ${GPU_MEM_UTIL:-0.95}
+      --max-model-len ${MAX_MODEL_LEN:-8192}
+      --dtype bfloat16
+      --enable-prefix-caching
+      --port 8000
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s  # Große Modelle brauchen Zeit zum Laden
+    networks:
+      - ai_network
+    restart: unless-stopped
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+  ai_network:
+    driver: bridge
+    internal: true  # vLLM hat keinen direkten externen Zugang
+
+volumes:
+  app_public:
+  pgdata:
+  shared_storage:

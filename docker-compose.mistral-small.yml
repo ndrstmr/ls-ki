@@ -1,0 +1,11 @@
+# Override für Mistral Small 3.1 24B (~20 GB VRAM auf A100-80GB)
+# Verwendung: docker compose -f docker-compose.yml -f docker-compose.mistral-small.yml up -d
+services:
+  vllm:
+    command: >
+      --model mistralai/Mistral-Small-3.1-24B-Instruct-2503
+      --gpu-memory-utilization 0.90
+      --max-model-len 32768
+      --dtype bfloat16
+      --enable-prefix-caching
+      --port 8000
