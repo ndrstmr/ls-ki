@@ -57,6 +57,8 @@ final class TranslationAgent
             'processing_ms' => $llmResponse->processingTimeMs,
         ]);
 
+        $qualityCheck = $this->runQualityCheck($llmResponse->content);
+
         return new TranslationResult(
             jobId: $jobId,
             inputText: $inputText,
@@ -66,7 +68,32 @@ final class TranslationAgent
             outputTokens: $llmResponse->outputTokens,
             processingTimeMs: $llmResponse->processingTimeMs,
             promptVersion: $this->promptVersion,
+            qualityCheck: $qualityCheck,
         );
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function runQualityCheck(string $translatedText): ?array
+    {
+        if (!$this->toolRegistry->has('quality_check')) {
+            return null;
+        }
+
+        try {
+            $tool = $this->toolRegistry->get('quality_check');
+            /** @var array<string, mixed> $result */
+            $result = $tool->execute(['text' => $translatedText]);
+
+            return $result;
+        } catch (\Throwable $e) {
+            $this->logger->warning('TranslationAgent: Quality-Check fehlgeschlagen', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     private function loadPrompt(string $filename): string

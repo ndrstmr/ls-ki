@@ -50,6 +50,13 @@ services:
         arguments:
             $tools: !tagged_iterator ls_ki.tool
 
+    # QualityCheckTool – aktiviert im Fallback-Branch demo/quality-check-fertig
+    App\Tool\QualityCheckTool:
+        tags: ['ls_ki.tool']
+        arguments:
+            $promptDir: '%app.prompt_dir%'
+            $promptVersion: '%app.prompt_version%'
+
     # Controller und Commands: Storage-Pfade als explizite Argumente
     App\Controller\TranslationController:
         arguments:

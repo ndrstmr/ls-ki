@@ -4,25 +4,28 @@ declare(strict_types=1);
 
 namespace App\Tool;
 
+use App\LlmGateway\LlmGatewayInterface;
+use Psr\Log\LoggerInterface;
+
 /**
- * QualityCheckTool – STUB für die CuP&Connect Live-Demo.
+ * QualityCheckTool – prüft Leichte-Sprache-Texte gegen das Regelwerk.
  *
- * Dieses Tool wird LIVE während der Präsentation durch den Copilot-Agenten
- * implementiert – als Demonstration agentischer Software-Entwicklung.
+ * Ruft das LLM mit dem quality-check.txt Prompt auf und gibt eine
+ * strukturierte Bewertung zurück: Score (0-100), Issues, Summary.
  *
- * Was der Agent implementieren wird:
- * - LLM-Aufruf mit quality-check.txt Prompt (config/prompts/v1.0/quality-check.txt)
- * - JSON-Antwort parsen: score, issues[], summary
- * - Rückgabe als strukturiertes Array
- *
- * Die ToolRegistry und der TranslationAgent sind bereits vorbereitet.
- * Dieses Tool muss nur den Tag "ls_ki.tool" erhalten (siehe services.yaml),
- * dann wird es automatisch registriert.
- *
- * @see docs/DEMO.md – Prompt und Ablauf für die Live-Demo
+ * Dieses Tool wird automatisch in der ToolRegistry registriert
+ * durch den Symfony-Tag "ls_ki.tool" (siehe services.yaml).
  */
 final class QualityCheckTool implements ToolInterface
 {
+    public function __construct(
+        private readonly LlmGatewayInterface $llmGateway,
+        private readonly LoggerInterface $logger,
+        private readonly string $promptDir,
+        private readonly string $promptVersion,
+    ) {
+    }
+
     public function getName(): string
     {
         return 'quality_check';
@@ -39,9 +42,54 @@ final class QualityCheckTool implements ToolInterface
      */
     public function execute(array $input): mixed
     {
-        // TODO: Wird live implementiert auf der CuP&Connect Demo
-        // Erwarteter Input:  ['text' => '<zu prüfender Text>']
-        // Erwarteter Output: ['score' => 0-100, 'issues' => [...], 'summary' => '...']
-        throw new \LogicException('QualityCheckTool noch nicht implementiert – wird live auf der Demo fertiggestellt.');
+        $text = $input['text'] ?? throw new \InvalidArgumentException('Parameter "text" fehlt.');
+
+        $systemPrompt = $this->loadPrompt();
+
+        $this->logger->info('QualityCheckTool: starte Qualitätsprüfung', [
+            'text_length' => strlen($text),
+            'model' => $this->llmGateway->getActiveModel(),
+        ]);
+
+        $response = $this->llmGateway->complete([
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $text],
+        ], ['temperature' => 0.1]);
+
+        $result = json_decode($response->content, true);
+
+        if (!is_array($result) || !isset($result['score'], $result['issues'], $result['summary'])) {
+            $this->logger->warning('QualityCheckTool: ungültige LLM-Antwort', [
+                'raw' => $response->content,
+            ]);
+
+            return [
+                'score' => 0,
+                'issues' => [],
+                'summary' => 'Qualitätsprüfung fehlgeschlagen – LLM-Antwort konnte nicht verarbeitet werden.',
+            ];
+        }
+
+        $this->logger->info('QualityCheckTool: Prüfung abgeschlossen', [
+            'score' => $result['score'],
+            'issues_count' => count($result['issues']),
+        ]);
+
+        return [
+            'score' => (int) $result['score'],
+            'issues' => $result['issues'],
+            'summary' => (string) $result['summary'],
+        ];
+    }
+
+    private function loadPrompt(): string
+    {
+        $path = sprintf('%s/%s/quality-check.txt', $this->promptDir, $this->promptVersion);
+
+        if (!file_exists($path)) {
+            throw new \RuntimeException(sprintf('Quality-Check-Prompt nicht gefunden: %s', $path));
+        }
+
+        return trim((string) file_get_contents($path));
     }
 }
