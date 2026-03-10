@@ -147,3 +147,4 @@ volumes:
   app_public:
   pgdata:
   shared_storage:
+  php_vendor:

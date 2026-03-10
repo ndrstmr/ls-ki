@@ -12,23 +12,29 @@ services:
     build:
       target: production
     environment:
-      APP_ENV: dev
-      APP_DEBUG: "1"
+      APP_ENV: prod
+      APP_DEBUG: "0"
       LLM_PROVIDER: mock
     volumes:
       - .:/var/www/html  # Source-Mount für Live-Reload
-      - /var/www/html/vendor  # vendor nicht überschreiben
+      - php_vendor:/var/www/html/vendor  # vendor aus Image behalten (kein --no-dev lokal nötig)
 
   messenger_worker:
     environment:
-      APP_ENV: dev
+      APP_ENV: prod
+      APP_DEBUG: "0"
       LLM_PROVIDER: mock
     depends_on:
       postgres:
         condition: service_healthy
-    # vllm-Abhängigkeit entfernen
+      vllm:
+        condition: service_started
+        required: false
 
   vllm:
     # Im Dev-Modus nicht starten
     profiles:
       - gpu
+
+volumes:
+  php_vendor:

@@ -16,12 +16,6 @@ RUN apk add --no-cache \
     intl zip pdo pdo_pgsql opcache pcntl bcmath \
   && rm -rf /var/cache/apk/*
 
-# APCu für Symfony System-Cache
-RUN apk add --no-cache --virtual .build-deps autoconf g++ make \
-  && pecl install apcu \
-  && docker-php-ext-enable apcu \
-  && apk del .build-deps
-
 COPY docker/php/production.ini /usr/local/etc/php/conf.d/production.ini
 
 WORKDIR /var/www/html
@@ -31,7 +25,7 @@ RUN mkdir -p var/cache var/log var/storage/inbox var/storage/outbox \
   && chown -R www-data:www-data var/
 
 ENV APP_ENV=prod APP_DEBUG=0
-RUN php bin/console cache:warmup --env=prod
 
 EXPOSE 9000
-CMD ["php-fpm"]
+# Cache-Warmup beim Start, nicht beim Build – vermeidet Probleme mit dev-only Bundles
+CMD ["sh", "-c", "php bin/console cache:warmup --env=prod 2>/dev/null || true && php-fpm"]
