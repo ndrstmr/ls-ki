@@ -1,0 +1,57 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    app.llm_provider: '%env(LLM_PROVIDER)%'
+    app.vllm_api_url: '%env(VLLM_API_URL)%'
+    app.vllm_api_key: '%env(string:VLLM_API_KEY)%'
+    app.active_model: '%env(APP_ACTIVE_MODEL)%'
+    app.prompt_version: '%env(PROMPT_VERSION)%'
+    app.prompt_dir: '%kernel.project_dir%/config/prompts'
+    app.storage_inbox: '%kernel.project_dir%/var/storage/inbox'
+    app.storage_outbox: '%kernel.project_dir%/var/storage/outbox'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # LlmGateway – Provider wird per Factory anhand LLM_PROVIDER gewählt
+    # mock → MockLlmGateway (lokale Entwicklung ohne GPU)
+    # vllm → VllmGateway (Produktion auf A100-VM)
+    App\LlmGateway\LlmGatewayInterface:
+        factory: ['App\LlmGateway\LlmGatewayFactory', 'create']
+        arguments:
+            $provider: '%app.llm_provider%'
+            $activeModel: '%app.active_model%'
+            $apiUrl: '%app.vllm_api_url%'
+            $apiKey: '%app.vllm_api_key%'
+            $httpClient: '@http_client'
+            $logger: '@logger'
+
+    # TranslationAgent
+    App\Agent\TranslationAgent:
+        arguments:
+            $promptVersion: '%app.prompt_version%'
+            $promptDir: '%app.prompt_dir%'
+
+    # ToolRegistry – alle Services mit Tag ls_ki.tool werden automatisch registriert
+    App\Tool\ToolRegistryInterface:
+        class: App\Tool\ToolRegistry
+        arguments:
+            $tools: !tagged_iterator ls_ki.tool
+
+    # Controller: Storage-Pfade als explizite Argumente
+    App\Controller\TranslationController:
+        arguments:
+            $storageInbox: '%app.storage_inbox%'
+            $storageOutbox: '%app.storage_outbox%'
