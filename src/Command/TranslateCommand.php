@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace Ndrstmr\LsKi\Command;
 
-use App\Agent\TranslationAgent;
+use Ndrstmr\LsKi\Agent\TranslationAgent;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

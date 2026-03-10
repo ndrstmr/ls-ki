@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tool;
+namespace Ndrstmr\LsKi\Tool;
 
 /**
  * Basis-Interface für alle Agent-Tools.

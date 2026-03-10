@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tool;
+namespace Ndrstmr\LsKi\Tool;
 
 /**
  * QualityCheckTool – STUB für die CuP&Connect Live-Demo.

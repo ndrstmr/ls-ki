@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Message;
+namespace Ndrstmr\LsKi\Message;
 
 /**
  * Symfony Messenger Message für asynchrone Übersetzungsjobs.

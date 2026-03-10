@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Agent;
+namespace Ndrstmr\LsKi\Agent;
 
-use App\LlmGateway\LlmGatewayInterface;
-use App\Tool\ToolRegistryInterface;
+use Ndrstmr\LsKi\LlmGateway\LlmGatewayInterface;
+use Ndrstmr\LsKi\Tool\ToolRegistryInterface;
 use Psr\Log\LoggerInterface;
 
 /**

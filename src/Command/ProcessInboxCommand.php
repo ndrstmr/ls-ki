@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace Ndrstmr\LsKi\Command;
 
-use App\Message\TranslationJobMessage;
+use Ndrstmr\LsKi\Message\TranslationJobMessage;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

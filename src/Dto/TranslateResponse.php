@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Dto;
+namespace Ndrstmr\LsKi\Dto;
 
-use App\Agent\TranslationResult;
+use Ndrstmr\LsKi\Agent\TranslationResult;
 
 /**
  * Response-DTO für POST /api/translate (synchron).

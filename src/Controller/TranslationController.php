@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace Ndrstmr\LsKi\Controller;
 
-use App\Agent\TranslationAgent;
-use App\Dto\TranslateRequest;
-use App\Dto\TranslateResponse;
-use App\Message\TranslationJobMessage;
+use Ndrstmr\LsKi\Agent\TranslationAgent;
+use Ndrstmr\LsKi\Dto\TranslateRequest;
+use Ndrstmr\LsKi\Dto\TranslateResponse;
+use Ndrstmr\LsKi\Message\TranslationJobMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
