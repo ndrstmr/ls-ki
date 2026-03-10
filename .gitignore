@@ -10,8 +10,27 @@
 ###< symfony/framework-bundle ###
 
 ###> LS-KI ###
-/.env.prod
+# TLS-Zertifikate
 /docker/nginx/certs/*.key
 /docker/nginx/certs/*.crt
 /docker/nginx/certs/*.pem
+
+# Produktions-Env
+/.env.prod
+
+# Symfony Flex Stubs (nicht genutzt, durch docker-compose.yml ersetzt)
+/compose.yaml
+/compose.override.yaml
+
+# Projektdokumentation (lokal, nicht für das Repo)
+/docs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
 ###< LS-KI ###
