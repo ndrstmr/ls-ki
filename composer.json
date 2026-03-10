@@ -1,6 +1,30 @@
 {
+    "name": "ndrstmr/ls-ki",
+    "description": "Symfony 7 service for translating German administrative language (Beamtendeutsch) into Leichte Sprache using on-premises LLMs served via vLLM. Designed for public sector use with full data sovereignty.",
     "type": "project",
-    "license": "proprietary",
+    "license": "EUPL-1.2",
+    "authors": [
+        {
+            "name": "Andreas Teumer",
+            "email": "ndrstmr@outlook.de",
+            "homepage": "https://github.com/ndrstmr"
+        }
+    ],
+    "keywords": [
+        "symfony",
+        "llm",
+        "vllm",
+        "leichte-sprache",
+        "plain-language",
+        "ai",
+        "nlp",
+        "public-sector"
+    ],
+    "homepage": "https://github.com/ndrstmr/ls-ki",
+    "support": {
+        "source": "https://github.com/ndrstmr/ls-ki",
+        "issues": "https://github.com/ndrstmr/ls-ki/issues"
+    },
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
@@ -36,12 +60,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "Ndrstmr\\LsKi\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "Ndrstmr\\LsKi\\Tests\\": "tests/"
         }
     },
     "replace": {

@@ -18,7 +18,7 @@ services:
         autowire: true
         autoconfigure: true
 
-    App\:
+    Ndrstmr\LsKi\:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
@@ -28,8 +28,8 @@ services:
     # LlmGateway – Provider wird per Factory anhand LLM_PROVIDER gewählt
     # mock → MockLlmGateway (lokale Entwicklung ohne GPU)
     # vllm → VllmGateway (Produktion auf A100-VM)
-    App\LlmGateway\LlmGatewayInterface:
-        factory: ['App\LlmGateway\LlmGatewayFactory', 'create']
+    Ndrstmr\LsKi\LlmGateway\LlmGatewayInterface:
+        factory: ['Ndrstmr\LsKi\LlmGateway\LlmGatewayFactory', 'create']
         arguments:
             $provider: '%app.llm_provider%'
             $activeModel: '%app.active_model%'
@@ -39,28 +39,28 @@ services:
             $logger: '@logger'
 
     # TranslationAgent
-    App\Agent\TranslationAgent:
+    Ndrstmr\LsKi\Agent\TranslationAgent:
         arguments:
             $promptVersion: '%app.prompt_version%'
             $promptDir: '%app.prompt_dir%'
 
     # ToolRegistry – alle Services mit Tag ls_ki.tool werden automatisch registriert
-    App\Tool\ToolRegistryInterface:
-        class: App\Tool\ToolRegistry
+    Ndrstmr\LsKi\Tool\ToolRegistryInterface:
+        class: Ndrstmr\LsKi\Tool\ToolRegistry
         arguments:
             $tools: !tagged_iterator ls_ki.tool
 
     # Controller und Commands: Storage-Pfade als explizite Argumente
-    App\Controller\TranslationController:
+    Ndrstmr\LsKi\Controller\TranslationController:
         arguments:
             $storageInbox: '%app.storage_inbox%'
             $storageOutbox: '%app.storage_outbox%'
 
-    App\Command\TranslateCommand:
+    Ndrstmr\LsKi\Command\TranslateCommand:
         arguments:
             $storageOutbox: '%app.storage_outbox%'
 
-    App\Command\ProcessInboxCommand:
+    Ndrstmr\LsKi\Command\ProcessInboxCommand:
         arguments:
             $storageInbox: '%app.storage_inbox%'
             $storageOutbox: '%app.storage_outbox%'

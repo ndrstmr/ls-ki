@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\MessageHandler;
+namespace Ndrstmr\LsKi\MessageHandler;
 
-use App\Agent\TranslationAgent;
-use App\Message\TranslationJobMessage;
+use Ndrstmr\LsKi\Agent\TranslationAgent;
+use Ndrstmr\LsKi\Message\TranslationJobMessage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 

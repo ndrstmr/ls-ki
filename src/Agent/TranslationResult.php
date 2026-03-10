@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Agent;
+namespace Ndrstmr\LsKi\Agent;
 
 /**
  * Strukturiertes Ergebnis einer Übersetzung.

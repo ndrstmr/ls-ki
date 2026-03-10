@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\LlmGateway;
+namespace Ndrstmr\LsKi\LlmGateway;
 
 /**
  * Zentrale Abstraktion für die LLM-Kommunikation.

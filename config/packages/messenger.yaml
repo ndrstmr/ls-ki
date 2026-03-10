@@ -22,7 +22,7 @@ framework:
                 dsn: 'doctrine://default?queue_name=failed'
 
         routing:
-            'App\Message\TranslationJobMessage': async
+            'Ndrstmr\LsKi\Message\TranslationJobMessage': async
 
 when@test:
     framework:

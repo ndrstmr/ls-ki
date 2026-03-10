@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Controller;
+namespace Ndrstmr\LsKi\Controller;
 
-use App\LlmGateway\LlmGatewayInterface;
+use Ndrstmr\LsKi\LlmGateway\LlmGatewayInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
