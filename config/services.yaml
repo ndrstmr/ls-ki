@@ -50,8 +50,17 @@ services:
         arguments:
             $tools: !tagged_iterator ls_ki.tool
 
-    # Controller: Storage-Pfade als explizite Argumente
+    # Controller und Commands: Storage-Pfade als explizite Argumente
     App\Controller\TranslationController:
+        arguments:
+            $storageInbox: '%app.storage_inbox%'
+            $storageOutbox: '%app.storage_outbox%'
+
+    App\Command\TranslateCommand:
+        arguments:
+            $storageOutbox: '%app.storage_outbox%'
+
+    App\Command\ProcessInboxCommand:
         arguments:
             $storageInbox: '%app.storage_inbox%'
             $storageOutbox: '%app.storage_outbox%'
