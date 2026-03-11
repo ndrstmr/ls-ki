@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Ndrstmr\LsKi\Agent;
 
+use DateTimeImmutable;
+use DateTimeInterface;
+
 /**
  * Strukturiertes Ergebnis einer Übersetzung.
  * Wird von TranslationAgent zurückgegeben und für Metadaten-Output genutzt.
  */
 final readonly class TranslationResult
 {
+    public DateTimeImmutable $createdAt;
+
     public function __construct(
         public string $jobId,
         public string $inputText,
@@ -19,9 +24,11 @@ final readonly class TranslationResult
         public int $outputTokens,
         public int $processingTimeMs,
         public string $promptVersion,
-        public ?\DateTimeImmutable $createdAt = null,
+        ?DateTimeImmutable $createdAt = null,
         public ?array $qualityCheck = null,
-    ) {}
+    ) {
+        $this->createdAt = $createdAt ?? new DateTimeImmutable();
+    }
 
     /**
      * Serialisiert das Ergebnis als Metadaten-Array (für .json Output-Datei).
@@ -32,7 +39,7 @@ final readonly class TranslationResult
         return [
             'job_id' => $this->jobId,
             'source_file' => $sourceFile,
-            'timestamp' => ($this->createdAt ?? new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            'timestamp' => $this->createdAt->format(DateTimeInterface::ATOM),
             'model' => [
                 'name' => $this->model,
                 'provider' => 'vllm-local',

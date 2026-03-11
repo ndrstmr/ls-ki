@@ -90,25 +90,6 @@ final class VllmGateway implements LlmGatewayInterface
         return $this->activeModel;
     }
 
-    public function switchModel(string $modelId): void
-    {
-        // Verifiziere, dass das Modell im vLLM-Server verfügbar ist
-        $available = $this->getAvailableModels();
-
-        if (!in_array($modelId, $available, true)) {
-            throw new \InvalidArgumentException(
-                sprintf('Modell "%s" nicht in vLLM verfügbar. Verfügbar: %s', $modelId, implode(', ', $available))
-            );
-        }
-
-        $this->logger->info('VllmGateway: Modell gewechselt', [
-            'from' => $this->activeModel,
-            'to' => $modelId,
-        ]);
-
-        $this->activeModel = $modelId;
-    }
-
     public function getAvailableModels(): array
     {
         try {

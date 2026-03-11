@@ -28,11 +28,6 @@ interface LlmGatewayInterface
      */
     public function getActiveModel(): string;
 
-    /**
-     * Wechselt das aktive Modell.
-     * Wirft eine Exception, wenn das Modell nicht verfügbar ist.
-     */
-    public function switchModel(string $modelId): void;
 
     /**
      * Gibt alle verfügbaren Modelle zurück.

@@ -63,22 +63,6 @@ final class MockLlmGateway implements LlmGatewayInterface
         return $this->activeModel;
     }
 
-    public function switchModel(string $modelId): void
-    {
-        if (!in_array($modelId, $this->availableModels, true)) {
-            throw new \InvalidArgumentException(
-                sprintf('Modell "%s" ist nicht verfügbar. Verfügbar: %s', $modelId, implode(', ', $this->availableModels))
-            );
-        }
-
-        $this->logger->info('MockLlmGateway: Modell gewechselt', [
-            'from' => $this->activeModel,
-            'to' => $modelId,
-        ]);
-
-        $this->activeModel = $modelId;
-    }
-
     public function getAvailableModels(): array
     {
         return $this->availableModels;

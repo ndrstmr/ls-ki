@@ -82,15 +82,8 @@ final class ModelController extends AbstractController
 
         $modelId = (string) $data['model_id'];
 
-        try {
-            $this->llmGateway->switchModel($modelId);
-        } catch (\InvalidArgumentException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         return $this->json([
-            'message' => 'Modell gewechselt.',
-            'active_model' => $this->llmGateway->getActiveModel(),
-        ]);
+            'error' => 'Das Modell kann nicht zur Laufzeit gewechselt werden (Stateful Anti-Pattern). Bitte verwende switch-model.sh für einen persistenten Wechsel.'
+        ], Response::HTTP_METHOD_NOT_ALLOWED);
     }
 }

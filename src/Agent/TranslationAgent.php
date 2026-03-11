@@ -71,7 +71,8 @@ final class TranslationAgent
 
     private function loadPrompt(string $filename): string
     {
-        $path = rtrim($this->promptDir, '/') . '/' . $this->promptVersion . '/' . $filename;
+        $safeFilename = basename($filename);
+        $path = rtrim($this->promptDir, '/') . '/' . $this->promptVersion . '/' . $safeFilename;
 
         if (!file_exists($path)) {
             throw new \RuntimeException(sprintf('Prompt-Template nicht gefunden: %s', $path));
