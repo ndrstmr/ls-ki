@@ -6,6 +6,7 @@ namespace Ndrstmr\LsKi\MessageHandler;
 
 use Ndrstmr\LsKi\Agent\TranslationAgent;
 use Ndrstmr\LsKi\Message\TranslationJobMessage;
+use Ndrstmr\LsKi\Storage\TranslationJobStorageInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -22,6 +23,7 @@ final class TranslationJobHandler
 {
     public function __construct(
         private readonly TranslationAgent $translationAgent,
+        private readonly TranslationJobStorageInterface $jobStorage,
         private readonly LoggerInterface $logger,
     ) {}
 
@@ -32,35 +34,26 @@ final class TranslationJobHandler
             'input_file' => $message->inputFilePath,
         ]);
 
-        if (!file_exists($message->inputFilePath)) {
+        if (!is_file($message->inputFilePath)) {
             throw new \RuntimeException(sprintf('Input-Datei nicht gefunden: %s', $message->inputFilePath));
         }
 
         $inputText = file_get_contents($message->inputFilePath);
+        if ($inputText === false) {
+            throw new \RuntimeException(sprintf('Input-Datei kann nicht gelesen werden: %s', $message->inputFilePath));
+        }
         $sourceFile = basename($message->inputFilePath);
 
         $result = $this->translationAgent->translate($inputText, $message->jobId);
 
-        // Output-Verzeichnis sicherstellen
-        if (!is_dir($message->outputDir)) {
-            mkdir($message->outputDir, 0755, true);
-        }
-
-        // Übersetzung schreiben
-        $outputFile = $message->outputDir . '/' . $message->jobId . '_leichte_sprache.txt';
-        file_put_contents($outputFile, $result->outputText);
-
-        // Metadaten schreiben
-        $metaFile = $message->outputDir . '/' . $message->jobId . '_meta.json';
-        file_put_contents(
-            $metaFile,
-            json_encode($result->toMetadata($sourceFile), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        $this->jobStorage->storeCompletedJob(
+            jobId: $message->jobId,
+            outputText: $result->outputText,
+            metadata: $result->toMetadata($sourceFile),
         );
 
         $this->logger->info('TranslationJobHandler: Job abgeschlossen', [
             'job_id' => $message->jobId,
-            'output_file' => $outputFile,
-            'meta_file' => $metaFile,
         ]);
     }
 }

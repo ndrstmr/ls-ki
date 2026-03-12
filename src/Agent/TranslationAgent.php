@@ -77,6 +77,11 @@ final class TranslationAgent
             throw new \RuntimeException(sprintf('Prompt-Template nicht gefunden: %s', $path));
         }
 
-        return file_get_contents($path);
+        $prompt = file_get_contents($path);
+        if ($prompt === false) {
+            throw new \RuntimeException(sprintf('Prompt-Template kann nicht gelesen werden: %s', $path));
+        }
+
+        return $prompt;
     }
 }

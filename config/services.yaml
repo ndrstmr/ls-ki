@@ -50,12 +50,14 @@ services:
         arguments:
             $tools: !tagged_iterator ls_ki.tool
 
-    # Controller und Commands: Storage-Pfade als explizite Argumente
-    Ndrstmr\LsKi\Controller\TranslationController:
+
+    Ndrstmr\LsKi\Storage\TranslationJobStorageInterface:
+        class: Ndrstmr\LsKi\Storage\LocalTranslationJobStorage
         arguments:
             $storageInbox: '%app.storage_inbox%'
             $storageOutbox: '%app.storage_outbox%'
 
+    # Commands: Storage-Pfade als explizite Argumente
     Ndrstmr\LsKi\Command\TranslateCommand:
         arguments:
             $storageOutbox: '%app.storage_outbox%'
@@ -63,4 +65,3 @@ services:
     Ndrstmr\LsKi\Command\ProcessInboxCommand:
         arguments:
             $storageInbox: '%app.storage_inbox%'
-            $storageOutbox: '%app.storage_outbox%'
