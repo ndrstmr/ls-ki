@@ -1,9 +1,10 @@
 # Override für Llama 3.3 70B AWQ (~37 GB VRAM auf A100-80GB)
 # Verwendung: docker compose -f docker-compose.yml -f docker-compose.llama-70b.yml up -d
+# Modell lokal installiert via --local-dir (kein HuggingFace-Cache-Format)
 services:
   vllm:
     command: >
-      --model casperhansen/llama-3.3-70b-instruct-awq
+      --model /root/.cache/huggingface/llama-3.3-70b-awq
       --gpu-memory-utilization 0.95
       --max-model-len 8192
       --dtype bfloat16

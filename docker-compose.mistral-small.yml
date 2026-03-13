@@ -1,9 +1,10 @@
-# Override für Mistral Small 3.1 24B (~20 GB VRAM auf A100-80GB)
+# Override für Mistral Small 24B (~20 GB VRAM auf A100-80GB)
 # Verwendung: docker compose -f docker-compose.yml -f docker-compose.mistral-small.yml up -d
+# Modell lokal installiert via --local-dir (kein HuggingFace-Cache-Format)
 services:
   vllm:
     command: >
-      --model mistralai/Mistral-Small-3.1-24B-Instruct-2503
+      --model /root/.cache/huggingface/mistral-small-24b
       --gpu-memory-utilization 0.90
       --max-model-len 32768
       --dtype bfloat16
