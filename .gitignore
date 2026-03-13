@@ -15,8 +15,10 @@
 /docker/nginx/certs/*.crt
 /docker/nginx/certs/*.pem
 
-# Produktions-Env
+# Umgebungs-spezifische Env-Dateien (enthalten Secrets)
+/.env.dev
 /.env.prod
+/.env.test
 
 # Symfony Flex Stubs (nicht genutzt, durch docker-compose.yml ersetzt)
 /compose.yaml
