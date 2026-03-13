@@ -13,6 +13,5 @@ final readonly class TranslationJobMessage
     public function __construct(
         public string $jobId,
         public string $inputFilePath,
-        public string $outputDir,
     ) {}
 }

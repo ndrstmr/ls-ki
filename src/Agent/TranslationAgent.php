@@ -71,12 +71,18 @@ final class TranslationAgent
 
     private function loadPrompt(string $filename): string
     {
-        $path = rtrim($this->promptDir, '/') . '/' . $this->promptVersion . '/' . $filename;
+        $safeFilename = basename($filename);
+        $path = rtrim($this->promptDir, '/') . '/' . $this->promptVersion . '/' . $safeFilename;
 
         if (!file_exists($path)) {
             throw new \RuntimeException(sprintf('Prompt-Template nicht gefunden: %s', $path));
         }
 
-        return file_get_contents($path);
+        $content = file_get_contents($path);
+        if ($content === false) {
+            throw new \RuntimeException(sprintf('Prompt-Template kann nicht gelesen werden: %s', $path));
+        }
+
+        return $content;
     }
 }

@@ -8,6 +8,7 @@ use Ndrstmr\LsKi\Agent\TranslationAgent;
 use Ndrstmr\LsKi\Dto\TranslateRequest;
 use Ndrstmr\LsKi\Dto\TranslateResponse;
 use Ndrstmr\LsKi\Message\TranslationJobMessage;
+use Ndrstmr\LsKi\Storage\TranslationJobStorageInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,8 +30,7 @@ final class TranslationController extends AbstractController
         private readonly TranslationAgent $translationAgent,
         private readonly MessageBusInterface $messageBus,
         private readonly ValidatorInterface $validator,
-        private readonly string $storageInbox,
-        private readonly string $storageOutbox,
+        private readonly TranslationJobStorageInterface $jobStorage,
     ) {}
 
     /**
@@ -82,17 +82,11 @@ final class TranslationController extends AbstractController
 
         $jobId = Uuid::v4()->toRfc4122();
 
-        // Text in Inbox-Datei schreiben
-        if (!is_dir($this->storageInbox)) {
-            mkdir($this->storageInbox, 0755, true);
-        }
-        $inputFile = $this->storageInbox . '/' . $jobId . '_input.txt';
-        file_put_contents($inputFile, $dto->text);
+        $inputFile = $this->jobStorage->queueJobInput($jobId, $dto->text);
 
         $this->messageBus->dispatch(new TranslationJobMessage(
             jobId: $jobId,
             inputFilePath: $inputFile,
-            outputDir: $this->storageOutbox,
         ));
 
         return $this->json([
@@ -111,25 +105,17 @@ final class TranslationController extends AbstractController
     #[Route('/jobs/{id}', methods: ['GET'])]
     public function getJob(string $id): JsonResponse
     {
-        // Prüfe ob Ergebnis in Outbox vorhanden
-        $metaFile = $this->storageOutbox . '/' . $id . '_meta.json';
-        $outputFile = $this->storageOutbox . '/' . $id . '_leichte_sprache.txt';
-
-        if (file_exists($metaFile) && file_exists($outputFile)) {
-            $meta = json_decode(file_get_contents($metaFile), true);
-            $output = file_get_contents($outputFile);
-
+        $completedJob = $this->jobStorage->getCompletedJob($id);
+        if ($completedJob !== null) {
             return $this->json([
                 'job_id' => $id,
                 'status' => 'completed',
-                'output_text' => $output,
-                'metadata' => $meta,
+                'output_text' => $completedJob->outputText,
+                'metadata' => $completedJob->metadata,
             ]);
         }
 
-        // Prüfe ob Input in Inbox vorhanden (= noch in Queue)
-        $inputFile = $this->storageInbox . '/' . $id . '_input.txt';
-        if (file_exists($inputFile)) {
+        if ($this->jobStorage->isJobQueued($id)) {
             return $this->json([
                 'job_id' => $id,
                 'status' => 'processing',

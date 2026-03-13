@@ -31,7 +31,6 @@ final class ProcessInboxCommand extends Command
     public function __construct(
         private readonly MessageBusInterface $messageBus,
         private readonly string $storageInbox,
-        private readonly string $storageOutbox,
     ) {
         parent::__construct();
     }
@@ -82,7 +81,6 @@ final class ProcessInboxCommand extends Command
             $this->messageBus->dispatch(new TranslationJobMessage(
                 jobId: $jobId,
                 inputFilePath: $file,
-                outputDir: $this->storageOutbox,
             ));
 
             $io->writeln(sprintf('  ✓ dispatcht: %s (Job-ID: %s)', $filename, $jobId));
