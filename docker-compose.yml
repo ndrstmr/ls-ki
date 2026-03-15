@@ -105,10 +105,13 @@ services:
   # ─── vLLM GPU Inference ───────────────────────────────────────────────────
   vllm:
     image: vllm/vllm-openai:v0.16.0
+    runtime: nvidia  # Explizit NVIDIA Runtime (CDI-Modus auf Trixie)
     volumes:
       - ${HF_CACHE_DIR:-/opt/models/huggingface}:/root/.cache/huggingface
     environment:
-      HF_TOKEN: ${HF_TOKEN}
+      HF_TOKEN: ${HF_TOKEN:-}
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
     ipc: host  # Pflicht: PyTorch Shared Memory (Docker-Default 64MB reicht nicht)
     command: >
       --model ${MODEL_ID:-/root/.cache/huggingface/llama-3.3-70b-awq}
