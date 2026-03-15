@@ -8,7 +8,7 @@ Entwickelt für den öffentlichen Sektor: vollständige Datensouveränität, kei
 
 [![License: EUPL-1.2](https://img.shields.io/badge/License-EUPL%201.2-blue.svg)](LICENSE)
 [![PHP](https://img.shields.io/badge/PHP-8.4-purple.svg)](https://www.php.net/)
-[![Symfony](https://img.shields.io/badge/Symfony-7.2-black.svg)](https://symfony.com/)
+[![Symfony](https://img.shields.io/badge/Symfony-7.4%20LTS-black.svg)](https://symfony.com/)
 [![Version](https://img.shields.io/badge/Version-0.0.1-green.svg)]()
 
 ---
@@ -42,7 +42,7 @@ Entwickelt für den öffentlichen Sektor: vollständige Datensouveränität, kei
 ```
 
 **Stack:**
-- PHP 8.4 + Symfony 7.2 (REST API, Messenger, Doctrine)
+- PHP 8.4 + Symfony 7.4 LTS (REST API, Messenger, Doctrine)
 - vLLM v0.16+ mit OpenAI-kompatibler API
 - PostgreSQL 17 (Doctrine Messenger Transport)
 - Nginx 1.27 als Reverse Proxy
