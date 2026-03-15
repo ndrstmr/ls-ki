@@ -73,7 +73,7 @@ Voraussetzung: NVIDIA GPU mit ≥ 40 GB VRAM (getestet auf A100-80GB).
 
 ```bash
 git clone https://github.com/ndrstmr/ls-ki.git
-cd ls-ki/app
+cd ls-ki
 
 # .env.local anlegen (Pflicht)
 echo "DB_PASSWORD=changeme" > .env.local
