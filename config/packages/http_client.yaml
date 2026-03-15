@@ -1,0 +1,4 @@
+framework:
+    http_client:
+        default_options:
+            no_proxy: 'vllm,localhost,127.0.0.1'

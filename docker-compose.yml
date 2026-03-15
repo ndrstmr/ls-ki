@@ -38,6 +38,8 @@ services:
       VLLM_API_KEY: "${VLLM_API_KEY:-}"
       APP_ACTIVE_MODEL: "${MODEL_ID:-/root/.cache/huggingface/llama-3.3-70b-awq}"
       PROMPT_VERSION: "${PROMPT_VERSION:-v1.0}"
+      NO_PROXY: "vllm,postgres,localhost,127.0.0.1"
+      no_proxy: "vllm,postgres,localhost,127.0.0.1"
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,6 +71,8 @@ services:
       VLLM_API_KEY: "${VLLM_API_KEY:-}"
       APP_ACTIVE_MODEL: "${MODEL_ID:-/root/.cache/huggingface/llama-3.3-70b-awq}"
       PROMPT_VERSION: "${PROMPT_VERSION:-v1.0}"
+      NO_PROXY: "vllm,postgres,localhost,127.0.0.1"
+      no_proxy: "vllm,postgres,localhost,127.0.0.1"
     depends_on:
       postgres:
         condition: service_healthy
