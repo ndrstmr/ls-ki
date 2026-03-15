@@ -1,0 +1,12 @@
+# Override für Ministral 3 14B Instruct 2512 (~15 GB VRAM auf A100-80GB)
+# Verwendung: docker compose -f docker-compose.yml -f docker-compose.ministral-3-14b.yml up -d
+# Modell lokal installiert via --local-dir (kein HuggingFace-Cache-Format)
+services:
+  vllm:
+    command: >
+      --model /root/.cache/huggingface/ministral-3-14b
+      --gpu-memory-utilization 0.90
+      --max-model-len 32768
+      --dtype bfloat16
+      --enable-prefix-caching
+      --port 8000
