@@ -5,7 +5,7 @@ services:
   vllm:
     command: >
       --model /root/.cache/huggingface/llama-3.3-70b-awq
-      --gpu-memory-utilization 0.95
+      --gpu-memory-utilization 0.90
       --max-model-len 8192
       --dtype bfloat16
       --enable-prefix-caching
