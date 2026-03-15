@@ -35,7 +35,7 @@ services:
       LLM_PROVIDER: "${LLM_PROVIDER:-vllm}"
       VLLM_API_URL: "http://vllm:8000"
       VLLM_API_KEY: "${VLLM_API_KEY:-}"
-      APP_ACTIVE_MODEL: "${MODEL_ID:-casperhansen/llama-3.3-70b-instruct-awq}"
+      APP_ACTIVE_MODEL: "${MODEL_ID:-/root/.cache/huggingface/llama-3.3-70b-awq}"
       PROMPT_VERSION: "${PROMPT_VERSION:-v1.0}"
     depends_on:
       postgres:
@@ -65,7 +65,7 @@ services:
       LLM_PROVIDER: "${LLM_PROVIDER:-vllm}"
       VLLM_API_URL: "http://vllm:8000"
       VLLM_API_KEY: "${VLLM_API_KEY:-}"
-      APP_ACTIVE_MODEL: "${MODEL_ID:-casperhansen/llama-3.3-70b-instruct-awq}"
+      APP_ACTIVE_MODEL: "${MODEL_ID:-/root/.cache/huggingface/llama-3.3-70b-awq}"
       PROMPT_VERSION: "${PROMPT_VERSION:-v1.0}"
     depends_on:
       postgres:
@@ -111,8 +111,8 @@ services:
       HF_TOKEN: ${HF_TOKEN}
     ipc: host  # Pflicht: PyTorch Shared Memory (Docker-Default 64MB reicht nicht)
     command: >
-      --model ${MODEL_ID:-casperhansen/llama-3.3-70b-instruct-awq}
-      --gpu-memory-utilization ${GPU_MEM_UTIL:-0.95}
+      --model ${MODEL_ID:-/root/.cache/huggingface/llama-3.3-70b-awq}
+      --gpu-memory-utilization ${GPU_MEM_UTIL:-0.90}
       --max-model-len ${MAX_MODEL_LEN:-8192}
       --dtype bfloat16
       --enable-prefix-caching
