@@ -1,5 +1,9 @@
 # ── Stage 1: Composer-Dependencies ──────────────────────────────────────────
 FROM composer:2 AS composer
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+ENV HTTP_PROXY=$HTTP_PROXY HTTPS_PROXY=$HTTPS_PROXY NO_PROXY=$NO_PROXY
 WORKDIR /app
 COPY composer.json composer.lock symfony.lock ./
 RUN composer install \
@@ -9,6 +13,10 @@ RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
 
 # ── Stage 2: Produktions-PHP-FPM ─────────────────────────────────────────────
 FROM php:8.4-fpm-alpine AS production
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+ENV HTTP_PROXY=$HTTP_PROXY HTTPS_PROXY=$HTTPS_PROXY NO_PROXY=$NO_PROXY
 
 RUN apk add --no-cache \
     curl icu-dev libzip-dev postgresql-dev linux-headers \
