@@ -104,7 +104,7 @@ services:
 
   # ─── vLLM GPU Inference ───────────────────────────────────────────────────
   vllm:
-    image: vllm/vllm-openai:v0.16.0
+    image: vllm/vllm-openai:v0.17.0
     runtime: nvidia  # Explizit NVIDIA Runtime (CDI-Modus auf Trixie)
     volumes:
       - ${HF_CACHE_DIR:-/opt/models/huggingface}:/root/.cache/huggingface
