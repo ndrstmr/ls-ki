@@ -31,7 +31,8 @@ WORKDIR /var/www/html
 COPY --from=composer /app /var/www/html
 
 RUN mkdir -p var/cache var/log var/storage/inbox var/storage/outbox \
-  && chown -R www-data:www-data var/
+  && chown -R www-data:www-data var/ \
+  && touch .env.local
 
 ENV APP_ENV=prod APP_DEBUG=0
 
