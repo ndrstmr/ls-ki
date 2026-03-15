@@ -1,5 +1,6 @@
 {
     "name": "ndrstmr/ls-ki",
+    "version": "0.0.1",
     "description": "Symfony 7 service for translating German administrative language (Beamtendeutsch) into Leichte Sprache using on-premises LLMs served via vLLM. Designed for public sector use with full data sovereignty.",
     "type": "project",
     "license": "EUPL-1.2",
