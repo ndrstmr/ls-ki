@@ -1,5 +1,7 @@
 # ls-ki
 
+**Version 0.0.1**
+
 **Leichte Sprache KI** – ein Symfony-7-Service zur automatischen Übersetzung von Verwaltungstexten (Beamtendeutsch) in [Leichte Sprache](https://www.leichte-sprache.org/) mithilfe von Open-Source-LLMs.
 
 Entwickelt für den öffentlichen Sektor: vollständige Datensouveränität, kein Cloud-Zwang, on-premises betreibbar auf Standard-GPU-Hardware.
@@ -7,17 +9,19 @@ Entwickelt für den öffentlichen Sektor: vollständige Datensouveränität, kei
 [![License: EUPL-1.2](https://img.shields.io/badge/License-EUPL%201.2-blue.svg)](LICENSE)
 [![PHP](https://img.shields.io/badge/PHP-8.4-purple.svg)](https://www.php.net/)
 [![Symfony](https://img.shields.io/badge/Symfony-7.2-black.svg)](https://symfony.com/)
+[![Version](https://img.shields.io/badge/Version-0.0.1-green.svg)]()
 
 ---
 
 ## Features
 
 - **REST API** – synchrone und asynchrone Übersetzung via HTTP
-- **Async-Queue** – Symfony Messenger mit PostgreSQL LISTEN/NOTIFY (kein Redis)
+- **Async-Queue** – Symfony Messenger mit PostgreSQL (kein Redis)
 - **Provider-Abstraktion** – Mock-Provider für lokale Entwicklung, vLLM für Produktion
-- **Modellwechsel** – Wechsel zwischen LLM-Modellen ohne Code-Änderung
+- **Modellwechsel** – Wechsel zwischen LLM-Modellen ohne Code-Änderung via `switch-model.sh`
 - **Prompt-Versionierung** – Prompt-Templates unter Versionskontrolle
-- **Tool Registry** – erweiterbar zur Laufzeit (z. B. Quality-Check-Tool)
+- **Storage-Abstraktion** – austauschbare Job-Speicherung (aktuell: Dateisystem)
+- **Tool Registry** – erweiterbar zur Laufzeit (z. B. QualityCheckTool)
 - **Vollständig on-premises** – keine Cloud-Abhängigkeit, keine Telemetrie
 
 ---
@@ -40,7 +44,7 @@ Entwickelt für den öffentlichen Sektor: vollständige Datensouveränität, kei
 **Stack:**
 - PHP 8.4 + Symfony 7.2 (REST API, Messenger, Doctrine)
 - vLLM v0.16+ mit OpenAI-kompatibler API
-- PostgreSQL 17 (Doctrine Messenger Transport + LISTEN/NOTIFY)
+- PostgreSQL 17 (Doctrine Messenger Transport)
 - Nginx 1.27 als Reverse Proxy
 - Docker Compose V2
 
@@ -48,12 +52,13 @@ Entwickelt für den öffentlichen Sektor: vollständige Datensouveränität, kei
 
 ## Unterstützte Modelle
 
-| Modell | Parameter | Empfohlen für |
-|--------|-----------|---------------|
-| Llama 3.3 70B Instruct AWQ | 70B (quantisiert) | Produktion, beste Qualität |
-| Mistral Small 3.1 24B | 24B | Schnellere Inferenz, Demo |
+| Modell | Parameter | VRAM | Einsatz |
+|--------|-----------|------|---------|
+| Llama 3.3 70B Instruct AWQ | 70B (quantisiert) | ~37 GB | Übersetzung, Produktion |
+| Ministral 3 14B Instruct | 14B (FP8) | ~15 GB | Übersetzung, schnellere Inferenz |
+| Qwen3-Coder-Next AWQ 4bit | 80B MoE (quantisiert) | ~45 GB | Code-Generierung |
 
-Voraussetzung für Produktion: NVIDIA GPU mit ≥ 40 GB VRAM (getestet auf A100-80GB).
+Voraussetzung: NVIDIA GPU mit ≥ 40 GB VRAM (getestet auf A100-80GB).
 
 ---
 
@@ -62,16 +67,16 @@ Voraussetzung für Produktion: NVIDIA GPU mit ≥ 40 GB VRAM (getestet auf A100-
 ### Voraussetzungen
 
 - Docker + Docker Compose V2
-- PHP 8.2+ + Composer (für lokale Entwicklung ohne Container)
+- PHP 8.4 + Composer (optional, für Entwicklung außerhalb Container)
 
 ### Setup
 
 ```bash
-git clone git@github.com:ndrstmr/ls-ki.git
-cd ls-ki
+git clone https://github.com/ndrstmr/ls-ki.git
+cd ls-ki/app
 
-# Datenbankpasswort setzen
-echo "DB_PASSWORD=dein-passwort" > .env.local
+# .env.local anlegen (Pflicht)
+echo "DB_PASSWORD=changeme" > .env.local
 
 # Stack starten (ohne GPU, mit Mock-LLM)
 docker compose --env-file .env --env-file .env.local \
@@ -95,7 +100,10 @@ curl -X POST http://localhost/api/translate \
 # Async-Job erstellen
 curl -X POST http://localhost/api/jobs \
   -H "Content-Type: application/json" \
-  -d '{"input_file": "personalausweis.txt"}'
+  -d '{"text": "Die Baugenehmigung ist zu erteilen, wenn dem Vorhaben keine öffentlich-rechtlichen Vorschriften entgegenstehen."}'
+
+# Job-Status abfragen
+curl http://localhost/api/jobs/<job-id>
 ```
 
 ---
@@ -109,7 +117,6 @@ curl -X POST http://localhost/api/jobs \
 | `GET` | `/api/jobs/{id}` | Job-Status abfragen |
 | `GET` | `/api/models` | Verfügbare Modelle |
 | `GET` | `/api/models/active` | Aktives Modell |
-| `PUT` | `/api/config/model` | Modell wechseln |
 
 ### Beispiel-Response `POST /api/translate`
 
@@ -118,7 +125,7 @@ curl -X POST http://localhost/api/jobs \
   "job_id": "018e1234-...",
   "input_text": "Der Antragsteller hat gemäß ...",
   "output_text": "Sie können Geld bekommen.\nDas Geld hilft Ihnen ...",
-  "model": "casperhansen/llama-3.3-70b-instruct-awq",
+  "model": "/root/.cache/huggingface/llama-3.3-70b-awq",
   "processing_time_ms": 3840,
   "prompt_version": "v1.0",
   "quality_check": null
@@ -127,42 +134,26 @@ curl -X POST http://localhost/api/jobs \
 
 ---
 
-## CLI-Kommandos
-
-```bash
-# Datei übersetzen
-php bin/console app:translate pfad/zur/datei.txt --output ./ausgabe/
-
-# Inbox verarbeiten (var/storage/inbox/)
-php bin/console app:process-inbox --dry-run
-
-# Modelle auflisten
-php bin/console app:model:list
-
-# Modell wechseln
-php bin/console app:model:switch casperhansen/llama-3.3-70b-instruct-awq
-```
-
----
-
 ## Produktion (mit GPU)
 
 ```bash
+# .env.local anlegen (siehe .env.prod.dist als Vorlage)
+cp .env.prod.dist .env.local
+# Werte anpassen: DB_PASSWORD, HF_CACHE_DIR, MODEL_ID, APP_ACTIVE_MODEL
+
 # Llama 3.3 70B (Standard)
 docker compose --env-file .env --env-file .env.local \
   -f docker-compose.yml -f docker-compose.llama-70b.yml up -d
 
-# Mistral Small 3.1 24B
+# Ministral 3 14B
 docker compose --env-file .env --env-file .env.local \
-  -f docker-compose.yml -f docker-compose.mistral-small.yml up -d
+  -f docker-compose.yml -f docker-compose.ministral-3-14b.yml up -d
 
-# Modell wechseln
-./switch-model.sh mistral-small
+# Modell wechseln (ohne Stack-Neustart)
+./switch-model.sh llama       # Llama 3.3 70B
+./switch-model.sh ministral   # Ministral 3 14B
+./switch-model.sh qwen        # Qwen3-Coder-Next AWQ
 ```
-
-Voraussetzungen für GPU-Betrieb:
-- NVIDIA Container Toolkit (CDI-Modus empfohlen)
-- `HF_TOKEN` in `.env.local` für Modell-Downloads von Hugging Face
 
 ---
 
@@ -174,10 +165,29 @@ Alle Einstellungen über Umgebungsvariablen in `.env` / `.env.local`:
 |----------|-------------|---------|
 | `LLM_PROVIDER` | `mock` (lokal) oder `vllm` (Produktion) | `mock` |
 | `VLLM_API_URL` | URL des vLLM-Servers | `http://vllm:8000` |
-| `APP_ACTIVE_MODEL` | Aktives Modell-ID | Llama 3.3 70B AWQ |
+| `APP_ACTIVE_MODEL` | Lokaler Pfad zum aktiven Modell | Llama 3.3 70B |
+| `MODEL_ID` | Modellpfad für vLLM-Container | Llama 3.3 70B |
+| `HF_CACHE_DIR` | Modell-Verzeichnis auf dem Host | `/opt/models/huggingface` |
 | `PROMPT_VERSION` | Prompt-Template-Version | `v1.0` |
-| `DATABASE_URL` | PostgreSQL-Verbindung | – |
-| `HF_TOKEN` | Hugging Face Token (Produktion) | – |
+| `DB_PASSWORD` | PostgreSQL-Passwort | – |
+
+---
+
+## CLI-Kommandos
+
+```bash
+# Datei übersetzen
+php bin/console app:translate pfad/zur/datei.txt
+
+# Inbox verarbeiten (var/storage/inbox/)
+php bin/console app:process-inbox
+
+# Modelle auflisten
+php bin/console app:model:list
+
+# Modell wechseln
+php bin/console app:model:switch /root/.cache/huggingface/ministral-3-14b
+```
 
 ---
 
@@ -192,7 +202,8 @@ src/
 ├── LlmGateway/     # LLM-Abstraktion (Mock + vLLM)
 ├── Message/        # Symfony Messenger Messages
 ├── MessageHandler/ # Async Job Handler
-└── Tool/           # Tool Registry + QualityCheckTool
+├── Storage/        # Job-Storage Abstraktion (Interface + LocalImpl)
+└── Tool/           # Tool Registry + QualityCheckTool (Stub)
 
 config/
 ├── packages/       # Symfony Bundle-Konfiguration
@@ -213,14 +224,14 @@ docker/
 ## Entwicklung
 
 ```bash
-# Makefile-Shortcuts
-make up-dev     # Dev-Stack starten
-make logs       # Container-Logs
-make sf CMD="debug:router"  # Symfony Console
+# Dev-Stack starten (Mock-LLM, kein GPU nötig)
+make up
 
-# PHPStan
-composer require --dev phpstan/phpstan
-vendor/bin/phpstan analyse src/
+# Symfony Console
+make sf CMD="debug:router"
+
+# Worker-Logs
+make worker-logs
 ```
 
 ---
@@ -230,3 +241,11 @@ vendor/bin/phpstan analyse src/
 [European Union Public Licence v. 1.2 (EUPL-1.2)](LICENSE)
 
 Copyright © 2026 [Andreas Teumer](https://github.com/ndrstmr)
+
+---
+
+## Hinweis
+
+Dieses Repository wurde mit Unterstützung von KI-Code-Agenten (Claude Code, Anthropic) entwickelt.
+Der Code wurde im Rahmen eines MVP-Sprints erstellt und ist nicht für den produktiven Einsatz ohne
+vorherige Prüfung freigegeben. **Die Nutzung erfolgt auf eigene Gefahr.**
