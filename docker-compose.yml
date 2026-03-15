@@ -27,6 +27,7 @@ services:
     volumes:
       - app_public:/var/www/html/public
       - shared_storage:/var/www/html/var/storage
+      - ./.env.local:/var/www/html/.env.local:ro
     environment:
       APP_ENV: prod
       APP_DEBUG: "0"
@@ -58,6 +59,7 @@ services:
       -vv
     volumes:
       - shared_storage:/var/www/html/var/storage
+      - ./.env.local:/var/www/html/.env.local:ro
     environment:
       APP_ENV: prod
       DATABASE_URL: "postgresql://app:${DB_PASSWORD}@postgres:5432/app?serverVersion=17"
