@@ -125,7 +125,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 180s  # Große Modelle brauchen Zeit zum Laden
+      start_period: 300s  # Große Modelle brauchen Zeit zum Laden (Llama 70B ~300s)
     networks:
       - ai_network
     restart: unless-stopped
