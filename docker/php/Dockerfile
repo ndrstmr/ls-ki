@@ -12,17 +12,18 @@ COPY . .
 RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
 
 # ── Stage 2: Produktions-PHP-FPM ─────────────────────────────────────────────
-FROM php:8.4-fpm-alpine AS production
+FROM php:8.4-fpm AS production
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG NO_PROXY
-ENV HTTP_PROXY=$HTTP_PROXY HTTPS_PROXY=$HTTPS_PROXY NO_PROXY=$NO_PROXY
+ENV HTTP_PROXY=$HTTP_PROXY HTTPS_PROXY=$HTTPS_PROXY NO_PROXY=$NO_PROXY \
+    http_proxy=$HTTP_PROXY https_proxy=$HTTPS_PROXY no_proxy=$NO_PROXY
 
-RUN apk add --no-cache \
-    curl icu-dev libzip-dev postgresql-dev linux-headers \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl libicu-dev libzip-dev libpq-dev linux-headers-amd64 \
   && docker-php-ext-install -j$(nproc) \
     intl zip pdo pdo_pgsql opcache pcntl bcmath \
-  && rm -rf /var/cache/apk/*
+  && rm -rf /var/lib/apt/lists/*
 
 COPY docker/php/production.ini /usr/local/etc/php/conf.d/production.ini
 
