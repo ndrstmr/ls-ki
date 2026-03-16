@@ -43,18 +43,27 @@ docker compose stop vllm
 docker compose rm -f vllm
 
 echo "Starte vLLM mit $OVERRIDE..."
-docker compose --env-file .env --env-file .env.local \
+MODEL_ID="$MODEL_ID" docker compose --env-file .env --env-file .env.local \
     -f docker-compose.yml -f "$OVERRIDE" \
     up -d vllm
 
 echo ""
 echo "Warte auf vLLM-Modell-Laden (kann 2-5 Minuten dauern)..."
 SECONDS=0
-until curl --noproxy '*' -sf http://localhost:8000/v1/models > /dev/null 2>&1; do
+until [ "$(docker inspect --format='{{.State.Health.Status}}' ls-ki-vllm-1 2>/dev/null)" = "healthy" ]; do
     sleep 10
     echo "  Noch beim Laden... (${SECONDS}s)"
 done
 
 echo ""
-echo "Modell bereit nach ${SECONDS}s:"
-curl --noproxy '*' -s http://localhost:8000/v1/models | python3 -m json.tool
+echo "vLLM bereit nach ${SECONDS}s – starte PHP + Worker mit neuem Modell..."
+MODEL_ID="$MODEL_ID" docker compose --env-file .env --env-file .env.local \
+    -f docker-compose.yml -f "$OVERRIDE" \
+    up -d --no-deps php messenger_worker
+
+echo ""
+echo "Warte auf PHP-Start (Cache-Warmup)..."
+sleep 15
+
+echo "Aktives Modell (Symfony):"
+curl --noproxy '*' -s http://localhost/api/models | python3 -m json.tool
