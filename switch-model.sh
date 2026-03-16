@@ -65,5 +65,9 @@ echo ""
 echo "Warte auf PHP-Start (Cache-Warmup)..."
 sleep 15
 
+echo "Nginx neu starten (aktualisiert upstream PHP-IP)..."
+docker compose restart nginx
+sleep 3
+
 echo "Aktives Modell (Symfony):"
 curl --noproxy '*' -s http://localhost/api/models | python3 -m json.tool
