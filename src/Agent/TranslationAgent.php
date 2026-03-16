@@ -31,12 +31,13 @@ final class TranslationAgent
      *
      * @return TranslationResult
      */
-    public function translate(string $inputText, string $jobId): TranslationResult
+    public function translate(string $inputText, string $jobId, bool $qualityCheck = false): TranslationResult
     {
         $this->logger->info('TranslationAgent: Starte Übersetzung', [
             'job_id' => $jobId,
             'input_chars' => strlen($inputText),
             'model' => $this->llmGateway->getActiveModel(),
+            'quality_check' => $qualityCheck,
         ]);
 
         $systemPrompt = $this->loadPrompt('translate.txt');
@@ -57,6 +58,14 @@ final class TranslationAgent
             'processing_ms' => $llmResponse->processingTimeMs,
         ]);
 
+        $qualityCheckResult = null;
+        if ($qualityCheck && $this->toolRegistry->has('quality_check')) {
+            $this->logger->info('TranslationAgent: Starte Quality-Check', ['job_id' => $jobId]);
+            $qualityCheckResult = $this->toolRegistry->get('quality_check')->execute([
+                'text' => $llmResponse->content,
+            ]);
+        }
+
         return new TranslationResult(
             jobId: $jobId,
             inputText: $inputText,
@@ -66,6 +75,7 @@ final class TranslationAgent
             outputTokens: $llmResponse->outputTokens,
             processingTimeMs: $llmResponse->processingTimeMs,
             promptVersion: $this->promptVersion,
+            qualityCheck: $qualityCheckResult,
         );
     }
 

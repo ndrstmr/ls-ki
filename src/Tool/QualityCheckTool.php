@@ -4,25 +4,24 @@ declare(strict_types=1);
 
 namespace Ndrstmr\LsKi\Tool;
 
+use Ndrstmr\LsKi\LlmGateway\LlmGatewayInterface;
+use Psr\Log\LoggerInterface;
+
 /**
- * QualityCheckTool – STUB für die CuP&Connect Live-Demo.
+ * QualityCheckTool – prüft Leichte-Sprache-Texte gegen das Regelwerk.
  *
- * Dieses Tool wird LIVE während der Präsentation durch den Copilot-Agenten
- * implementiert – als Demonstration agentischer Software-Entwicklung.
- *
- * Was der Agent implementieren wird:
- * - LLM-Aufruf mit quality-check.txt Prompt (config/prompts/v1.0/quality-check.txt)
- * - JSON-Antwort parsen: score, issues[], summary
- * - Rückgabe als strukturiertes Array
- *
- * Die ToolRegistry und der TranslationAgent sind bereits vorbereitet.
- * Dieses Tool muss nur den Tag "ls_ki.tool" erhalten (siehe services.yaml),
- * dann wird es automatisch registriert.
- *
- * @see docs/DEMO.md – Prompt und Ablauf für die Live-Demo
+ * Wird als opt-in Tool aufgerufen wenn quality_check=true im Request.
+ * Nutzt den quality-check.txt Prompt und gibt Score + Issues zurück.
  */
 final class QualityCheckTool implements ToolInterface
 {
+    public function __construct(
+        private readonly LlmGatewayInterface $llmGateway,
+        private readonly LoggerInterface $logger,
+        private readonly string $promptDir,
+        private readonly string $promptVersion,
+    ) {}
+
     public function getName(): string
     {
         return 'quality_check';
@@ -39,9 +38,58 @@ final class QualityCheckTool implements ToolInterface
      */
     public function execute(array $input): mixed
     {
-        // TODO: Wird live implementiert auf der CuP&Connect Demo
-        // Erwarteter Input:  ['text' => '<zu prüfender Text>']
-        // Erwarteter Output: ['score' => 0-100, 'issues' => [...], 'summary' => '...']
-        throw new \LogicException('QualityCheckTool noch nicht implementiert – wird live auf der Demo fertiggestellt.');
+        $text = $input['text'] ?? '';
+
+        if ($text === '') {
+            return ['score' => 0, 'issues' => [], 'summary' => 'Kein Text übergeben.'];
+        }
+
+        $promptPath = rtrim($this->promptDir, '/') . '/' . $this->promptVersion . '/quality-check.txt';
+
+        if (!file_exists($promptPath)) {
+            $this->logger->error('QualityCheckTool: Prompt nicht gefunden', ['path' => $promptPath]);
+            return ['score' => 0, 'issues' => [], 'summary' => 'Qualitätsprüfung fehlgeschlagen: Prompt nicht gefunden.'];
+        }
+
+        $systemPrompt = file_get_contents($promptPath);
+        if ($systemPrompt === false) {
+            return ['score' => 0, 'issues' => [], 'summary' => 'Qualitätsprüfung fehlgeschlagen: Prompt nicht lesbar.'];
+        }
+
+        try {
+            $response = $this->llmGateway->complete([
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user', 'content' => $text],
+            ], [
+                'temperature' => 0.1,
+                'max_tokens' => 1024,
+            ]);
+
+            $content = trim($response->content);
+
+            // JSON-Extraktion: Modelle schreiben manchmal ```json ... ``` drum herum
+            if (preg_match('/\{.*\}/s', $content, $matches)) {
+                $content = $matches[0];
+            }
+
+            $result = json_decode($content, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($result)) {
+                $this->logger->warning('QualityCheckTool: JSON-Parse-Fehler', [
+                    'error' => json_last_error_msg(),
+                    'content' => substr($content, 0, 200),
+                ]);
+                return ['score' => 0, 'issues' => [], 'summary' => 'Qualitätsprüfung fehlgeschlagen: Ungültige Antwort vom Modell.'];
+            }
+
+            return [
+                'score' => (int) ($result['score'] ?? 0),
+                'issues' => (array) ($result['issues'] ?? []),
+                'summary' => (string) ($result['summary'] ?? ''),
+            ];
+        } catch (\Throwable $e) {
+            $this->logger->error('QualityCheckTool: LLM-Aufruf fehlgeschlagen', ['error' => $e->getMessage()]);
+            return ['score' => 0, 'issues' => [], 'summary' => 'Qualitätsprüfung fehlgeschlagen: ' . $e->getMessage()];
+        }
     }
 }

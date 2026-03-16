@@ -44,6 +44,12 @@ services:
             $promptVersion: '%app.prompt_version%'
             $promptDir: '%app.prompt_dir%'
 
+    # QualityCheckTool
+    Ndrstmr\LsKi\Tool\QualityCheckTool:
+        arguments:
+            $promptDir: '%app.prompt_dir%'
+            $promptVersion: '%app.prompt_version%'
+
     # ToolRegistry – alle Services mit Tag ls_ki.tool werden automatisch registriert
     Ndrstmr\LsKi\Tool\ToolRegistryInterface:
         class: Ndrstmr\LsKi\Tool\ToolRegistry

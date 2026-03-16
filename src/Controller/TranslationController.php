@@ -54,7 +54,7 @@ final class TranslationController extends AbstractController
         $jobId = Uuid::v4()->toRfc4122();
 
         try {
-            $result = $this->translationAgent->translate($dto->text, $jobId);
+            $result = $this->translationAgent->translate($dto->text, $jobId, $dto->qualityCheck);
         } catch (\Throwable $e) {
             return $this->json(['error' => 'Übersetzung fehlgeschlagen: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
