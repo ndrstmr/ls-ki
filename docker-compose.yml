@@ -33,7 +33,7 @@ services:
       APP_DEBUG: "0"
       DATABASE_URL: "postgresql://app:${DB_PASSWORD}@postgres:5432/app?serverVersion=17"
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
-      LLM_PROVIDER: "${LLM_PROVIDER:-vllm}"
+      LLM_PROVIDER: "${LLM_PROVIDER_LOCAL:-vllm}"
       VLLM_API_URL: "http://vllm:8000"
       VLLM_API_KEY: "${VLLM_API_KEY:-}"
       APP_ACTIVE_MODEL: "${MODEL_ID:-/root/.cache/huggingface/llama-3.3-70b-awq}"
@@ -66,7 +66,7 @@ services:
       APP_ENV: prod
       DATABASE_URL: "postgresql://app:${DB_PASSWORD}@postgres:5432/app?serverVersion=17"
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
-      LLM_PROVIDER: "${LLM_PROVIDER:-vllm}"
+      LLM_PROVIDER: "${LLM_PROVIDER_LOCAL:-vllm}"
       VLLM_API_URL: "http://vllm:8000"
       VLLM_API_KEY: "${VLLM_API_KEY:-}"
       APP_ACTIVE_MODEL: "${MODEL_ID:-/root/.cache/huggingface/llama-3.3-70b-awq}"
