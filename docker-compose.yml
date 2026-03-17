@@ -31,7 +31,6 @@ services:
     environment:
       APP_ENV: prod
       APP_DEBUG: "0"
-      DATABASE_URL: "postgresql://app:${DB_PASSWORD}@postgres:5432/app?serverVersion=17"
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
       LLM_PROVIDER: "${LLM_PROVIDER_LOCAL:-vllm}"
       VLLM_API_URL: "http://vllm:8000"
@@ -64,7 +63,6 @@ services:
     env_file: ./.env.local
     environment:
       APP_ENV: prod
-      DATABASE_URL: "postgresql://app:${DB_PASSWORD}@postgres:5432/app?serverVersion=17"
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
       LLM_PROVIDER: "${LLM_PROVIDER_LOCAL:-vllm}"
       VLLM_API_URL: "http://vllm:8000"
