@@ -46,6 +46,7 @@ services:
 
     # QualityCheckTool
     Ndrstmr\LsKi\Tool\QualityCheckTool:
+        tags: ['ls_ki.tool']
         arguments:
             $promptDir: '%app.prompt_dir%'
             $promptVersion: '%app.prompt_version%'
