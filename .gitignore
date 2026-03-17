@@ -19,6 +19,7 @@
 /.env.dev
 /.env.prod
 /.env.test
+/.env.demo
 
 # Symfony Flex Stubs (nicht genutzt, durch docker-compose.yml ersetzt)
 /compose.yaml
@@ -27,8 +28,7 @@
 # Symfony auto-generierte IDE-Helper (nicht ins Repo)
 /config/reference.php
 
-# Projektdokumentation (lokal, nicht für das Repo)
-/docs/
+
 
 # IDE
 .idea/

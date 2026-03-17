@@ -49,3 +49,55 @@ status:
 ## Diese Hilfe anzeigen
 help:
 	@grep -E '^##' Makefile | sed 's/## //'
+
+## ── Demo (CuP&Connect) ───────────────────────────────────────────────────────
+
+## Demo-Stack starten (Llama 70B + ttyd + SPA)
+up-demo:
+	docker compose \
+	  -f docker-compose.yml \
+	  -f docker-compose.llama-70b.yml \
+	  -f docker-compose.demo.yml \
+	  up -d
+	@echo ""
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  LS-KI Demo-Stack gestartet"
+	@echo ""
+	@echo "  Präsentation:  http://$(shell hostname -I | awk '{print $$1}')/demo/"
+	@echo "  Terminal:      http://$(shell hostname -I | awk '{print $$1}')/terminal/"
+	@echo "  API:           http://$(shell hostname -I | awk '{print $$1}')/api/health"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+## Demo-Overlay stoppen (Basis-Stack bleibt)
+down-demo:
+	docker compose \
+	  -f docker-compose.yml \
+	  -f docker-compose.llama-70b.yml \
+	  -f docker-compose.demo.yml \
+	  down
+
+## Shell im ttyd-Container öffnen
+ttyd-shell:
+	docker exec -it ls-ki-ttyd bash
+
+## ttyd Container-Logs
+ttyd-logs:
+	docker compose -f docker-compose.yml -f docker-compose.demo.yml logs -f ttyd
+
+## GitHub CLI im ttyd-Container einrichten (Token + gh copilot Extension)
+gh-setup:
+	docker exec -it ls-ki-ttyd bash -c "gh auth login && gh extension install github/gh-copilot && echo '✓ GitHub Copilot CLI bereit'"
+
+## Pre-Demo Checklist: Container-Status, API-Health, GPU-VRAM
+demo-check:
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "  Pre-Demo Checklist"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo ""
+	@docker compose ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null || true
+	@echo ""
+	@curl -s http://localhost/api/health | python3 -m json.tool 2>/dev/null || echo "  ⚠ API nicht erreichbar"
+	@echo ""
+	@nvidia-smi --query-gpu=name,memory.used,memory.total --format=csv,noheader 2>/dev/null \
+	  | awk -F', ' '{printf "  GPU: %s · VRAM: %s / %s\n", $$1, $$2, $$3}' || true
+	@echo ""

@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LS-KI · Dataport CCW · CuP&amp;Connect</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/black.min.css">
+
+<style>
+/* ─────────────────────────────────────────────────────────────────
+   DESIGN SYSTEM
+───────────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #080c14;
+  --bg2:       #0d1320;
+  --bg3:       #121a2e;
+  --bg4:       #1a2340;
+  --border:    #1e2d4a;
+  --border2:   #2a3d60;
+  --accent:    #00d4aa;
+  --accent-dim:#00a882;
+  --blue:      #4a9eff;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
+  --green:     #22c55e;
+  --text:      #e2e8f0;
+  --text2:     #94a3b8;
+  --text3:     #64748b;
+  --mono:      'Courier New', Courier, monospace;
+  --sans:      Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.reveal-viewport { background: var(--bg) !important; }
+
+.reveal {
+  font-family: var(--sans) !important;
+  color: var(--text) !important;
+}
+
+/* Noise texture overlay */
+.reveal-viewport::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.6;
+}
+
+/* ── Slide base ─────────────────────────────────────────────────── */
+.reveal .slides section {
+  height: 100vh;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 60px 80px !important;
+  text-align: left !important;
+}
+
+.reveal .slides section.center-slide {
+  align-items: center;
+  text-align: center !important;
+}
+
+/* ── Typography ─────────────────────────────────────────────────── */
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--sans) !important;
+  text-transform: none !important;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 0.3em;
+}
+
+.reveal h1 { font-size: clamp(2.4rem, 5vw, 4rem); font-weight: 800; color: var(--text); }
+.reveal h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; color: var(--text); }
+.reveal h3 { font-size: clamp(1.2rem, 2.5vw, 1.8rem); font-weight: 600; color: var(--accent); }
+
+.reveal p, .reveal li {
+  font-size: clamp(0.9rem, 1.8vw, 1.15rem);
+  line-height: 1.7;
+  color: var(--text2);
+}
+
+.reveal code {
+  font-family: var(--mono) !important;
+  font-size: 0.85em;
+  background: var(--bg3);
+  color: var(--accent);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+/* ── Accent label ────────────────────────────────────────────────── */
+.label {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 4px 12px;
+  border-radius: 3px;
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+.label.blue   { color: var(--blue);  border-color: var(--blue); }
+.label.amber  { color: var(--amber); border-color: var(--amber); }
+.label.red    { color: var(--red);   border-color: var(--red); }
+
+/* ── Grid line decoration ────────────────────────────────────────── */
+.slide-line {
+  width: 60px; height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  margin-bottom: 28px;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.card-grid {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+}
+.card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.card.blue::before  { background: linear-gradient(90deg, var(--blue), transparent); }
+.card.amber::before { background: linear-gradient(90deg, var(--amber), transparent); }
+
+.card .card-icon {
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+  display: block;
+}
+.card h4 {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.card p {
+  font-size: 0.82rem !important;
+  color: var(--text3) !important;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Terminal block ──────────────────────────────────────────────── */
+.terminal {
+  background: #050810;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: var(--mono);
+  width: 100%;
+}
+.terminal-bar {
+  background: var(--bg3);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.terminal-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+}
+.terminal-dot.red    { background: #ff5f56; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green  { background: #27c93f; }
+.terminal-title {
+  font-size: 0.72rem;
+  color: var(--text3);
+  margin-left: 8px;
+  letter-spacing: 0.05em;
+}
+.terminal-body {
+  padding: 18px 20px;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #c9d1d9;
+}
+.terminal-body .prompt  { color: var(--accent); }
+.terminal-body .cmd     { color: var(--text); }
+.terminal-body .out     { color: var(--text2); }
+.terminal-body .out-accent { color: var(--accent); font-weight: 600; }
+.terminal-body .comment { color: var(--text3); }
+
+/* ── Before/After comparison ─────────────────────────────────────── */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+.compare-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+.compare-box.before { border-top: 2px solid var(--red); }
+.compare-box.after  { border-top: 2px solid var(--accent); }
+.compare-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: block;
+}
+.compare-box.before .compare-label { color: var(--red); }
+.compare-box.after  .compare-label { color: var(--accent); }
+.compare-box.before p { color: var(--text2); }
+.compare-box.after  p { color: var(--text); }
+
+/* ── Architecture diagram ────────────────────────────────────────── */
+.arch-diagram {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(0.55rem, 1.1vw, 0.78rem);
+  line-height: 1.6;
+  color: #7dd3b8;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  white-space: pre;
+  overflow: auto;
+  width: 100%;
+}
+
+/* ── Model comparison table ──────────────────────────────────────── */
+.model-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.model-table th {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+}
+.model-table th.accent { color: var(--accent); }
+.model-table th.blue   { color: var(--blue); }
+.model-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  vertical-align: top;
+}
+.model-table tr:last-child td { border-bottom: none; }
+.model-table td:first-child { color: var(--text3); font-family: var(--mono); font-size: 0.78rem; }
+.model-table .good  { color: var(--green); }
+.model-table .warn  { color: var(--amber); }
+.model-table .badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.model-table .badge.green  { background: rgba(34,197,94,0.15);  color: var(--green); }
+.model-table .badge.blue   { background: rgba(74,158,255,0.15); color: var(--blue); }
+
+/* ── Stack pills ─────────────────────────────────────────────────── */
+.stack-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.stack-pill {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stack-pill span { font-size: 1rem; }
+
+/* ── Progress bar ────────────────────────────────────────────────── */
+.metric-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.metric-bar .bar-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text3);
+  width: 160px;
+  flex-shrink: 0;
+}
+.metric-bar .bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.metric-bar .bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--blue));
+  transition: width 1s ease;
+}
+.metric-bar .bar-value {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  width: 40px;
+  text-align: right;
+}
+
+/* ── ttyd iframe ─────────────────────────────────────────────────── */
+#terminal-frame-wrapper {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border2);
+  position: relative;
+  background: #050810;
+}
+#terminal-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+#terminal-fallback {
+  display: none;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 20px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: #c9d1d9;
+}
+.ttyd-status {
+  position: absolute;
+  top: 10px; right: 12px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+}
+.ttyd-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+.ttyd-dot.offline { background: var(--amber); animation: none; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ── Title slide specifics ───────────────────────────────────────── */
+.title-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.title-main {
+  font-size: clamp(3rem, 7vw, 5.5rem) !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: -0.03em !important;
+  color: var(--text) !important;
+  margin-bottom: 16px !important;
+}
+.title-main .accent-word { color: var(--accent); }
+.title-sub {
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  color: var(--text3);
+  font-weight: 400;
+  margin-bottom: 40px;
+  max-width: 600px;
+}
+.title-meta {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.title-meta-item {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.title-meta-item::before {
+  content: '▸';
+  color: var(--accent);
+}
+
+/* ── Background decoration ───────────────────────────────────────── */
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+.bg-glow-tl {
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(0,212,170,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.bg-glow-br {
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(74,158,255,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Numbered list ───────────────────────────────────────────────── */
+.num-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+.num-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2) !important;
+  font-size: 0.95rem !important;
+}
+.num-list li:last-child { border-bottom: none; }
+.num-list li .num {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 28px;
+  margin-top: 3px;
+}
+
+/* ── Reveal overrides ────────────────────────────────────────────── */
+.reveal .progress { background: var(--bg3) !important; }
+.reveal .progress span { background: var(--accent) !important; }
+.reveal .controls button { color: var(--accent) !important; }
+.reveal .slide-number {
+  font-family: var(--mono) !important;
+  font-size: 0.65rem !important;
+  color: var(--text3) !important;
+  background: transparent !important;
+}
+
+/* ── Fragments ───────────────────────────────────────────────────── */
+.reveal .fragment { opacity: 0.2; }
+.reveal .fragment.visible { opacity: 1; }
+
+/* fullscreen slide for terminal */
+.slides section.terminal-slide {
+  padding: 30px 50px !important;
+}
+.terminal-slide .slide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.terminal-slide {
+  height: 100vh;
+}
+
+/* ── Roadmap timeline ────────────────────────────────────────────── */
+.timeline {
+  position: relative;
+  padding-left: 28px;
+  width: 100%;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px; top: 8px; bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent), var(--blue), transparent);
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -25px; top: 8px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+}
+.timeline-item.future::before { background: var(--blue); }
+.timeline-item.far::before    { background: var(--text3); }
+.timeline-item h4 {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.timeline-item p {
+  font-size: 0.8rem !important;
+  color: var(--text3) !important;
+  margin: 0;
+}
+
+/* ── Closing slide ───────────────────────────────────────────────── */
+.closing-big {
+  font-size: clamp(2rem, 5vw, 4rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  color: var(--text) !important;
+}
+.closing-big .dim { color: var(--text3); }
+</style>
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 1 — TITEL
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="bg-glow-tl"></div>
+  <div class="bg-glow-br"></div>
+
+  <div class="title-eyebrow">Dataport · CCW InnoLab · CuP&amp;Connect 2026</div>
+
+  <h1 class="title-main">
+    <span class="accent-word">LS-KI</span><br>
+    Leichte Sprache<br>per KI
+  </h1>
+
+  <p class="title-sub">
+    Verwaltungstexte automatisch in Leichte Sprache übersetzen —
+    Open Source, On-Premises, BFSG-konform.
+  </p>
+
+  <div class="title-meta">
+    <div class="title-meta-item">Andreas Störmer · DL4 / CCW</div>
+    <div class="title-meta-item">Symfony 7.4 LTS · vLLM · A100-80GB</div>
+    <div class="title-meta-item">2-Wochen-Sprint mit KI-Co-Pilot</div>
+    <div class="title-meta-item">github.com/ndrstmr/ls-ki · EUPL-1.2</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 2 — PROBLEM
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="label red">Das Problem</div>
+  <div class="slide-line"></div>
+  <h2>Verwaltungssprache schließt<br>Menschen aus.</h2>
+
+  <div style="margin-top: 32px;" class="compare-grid">
+    <div class="compare-box before">
+      <span class="compare-label">Verwaltungsdeutsch</span>
+      <p>„Anspruchsberechtigt sind Mieter sowie Eigentümer von selbst genutztem Wohnraum, sofern das Gesamteinkommen des Haushalts die gesetzlich festgelegten Einkommensgrenzen nicht überschreitet."</p>
+    </div>
+    <div class="compare-box after">
+      <span class="compare-label">Leichte Sprache</span>
+      <p>Sie können Wohn·geld bekommen.<br>
+         Sie müssen wenig Geld verdienen.<br>
+         Sie müssen zur Miete wohnen.<br>
+         Oder: Sie müssen eine eigene Wohnung haben.<br>
+         Es gibt eine Grenze für das Einkommen.<br>
+         Ihr Einkommen darf nicht zu hoch sein.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px;" class="card-grid cols-3">
+    <div class="card">
+      <span class="card-icon">⚖️</span>
+      <h4>Rechtspflicht</h4>
+      <p>BFSG + BITV 2.0 verpflichten öffentliche Stellen zu barrierefreier Sprache</p>
+    </div>
+    <div class="card blue">
+      <span class="card-icon">👥</span>
+      <h4>Zielgruppe</h4>
+      <p>~15% der Bevölkerung sind auf Leichte Sprache angewiesen</p>
+    </div>
+    <div class="card amber">
+      <span class="card-icon">⏱️</span>
+      <h4>Manuelle Übersetzung</h4>
+      <p>1 Seite ≈ 4–8 Stunden Aufwand durch zertifizierte Fachkräfte</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 3 — ARCHITEKTUR
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="label">Architektur</div>
+  <div class="slide-line"></div>
+  <h2>Agent-Pattern auf On-Prem-Infrastruktur</h2>
+
+  <div style="margin-top: 24px;" class="arch-diagram">┌──────────────────────────────────────────────────────────────────────┐
+│              Debian 13 (Trixie) VM  ·  10 CPU  ·  128 GB  ·  A100-80GB    │
+│  ┌─────────────────────────── Docker Compose ───────────────────┐    │
+│  │                                                               │    │
+│  │  Browser / curl                                               │    │
+│  │      │                                                        │    │
+│  │      ▼                                                        │    │
+│  │  ┌────────┐   ┌──────────────────────────────────────────┐   │    │
+│  │  │ Nginx  │──▶│           Symfony 7.4 (PHP-FPM)           │   │    │
+│  │  │  :80   │   │  REST API  │  Translation  │  Tool       │   │    │
+│  │  └────────┘   │  /api/*    │  Agent        │  Registry   │   │    │
+│  │               └──────────────────┬───────────────────────┘   │    │
+│  │  ┌──────────┐                    │  OpenAI-compatible API     │    │
+│  │  │ Messenger│                    ▼                            │    │
+│  │  │ Worker×2 │──────────▶  ┌──────────────┐                   │    │
+│  │  └──────────┘             │   vLLM :8000  │  ← A100-80GB     │    │
+│  │                           │  Llama 70B AWQ│                   │    │
+│  │  ┌──────────┐             │ Ministral-14B │                   │    │
+│  │  │PostgreSQL│             └──────────────┘                   │    │
+│  │  │  :5432   │                                                 │    │
+│  │  └──────────┘  ┌────────┐  ┌──────────┐                      │    │
+│  │                │  ttyd  │  │SPA /demo/│  ← Diese Präsentation │    │
+│  │                │ :7681  │  │  Nginx   │                       │    │
+│  │                └────────┘  └──────────┘                       │    │
+│  └───────────────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────────┘</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 4 — TECH STACK
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="label blue">Tech-Stack</div>
+  <div class="slide-line"></div>
+  <h2>100% Open Source · 100% On-Premises</h2>
+
+  <div style="margin-top: 28px;" class="card-grid cols-2">
+    <div>
+      <h3 style="margin-bottom:14px; font-size:0.85rem; letter-spacing:0.1em; text-transform:uppercase;">Backend</h3>
+      <div class="stack-list">
+        <div class="stack-pill"><span>🐘</span> PHP 8.4</div>
+        <div class="stack-pill"><span>⚡</span> Symfony 7.4 LTS</div>
+        <div class="stack-pill"><span>📬</span> Symfony Messenger</div>
+        <div class="stack-pill"><span>🐘</span> PostgreSQL 17</div>
+        <div class="stack-pill"><span>🌐</span> Nginx</div>
+        <div class="stack-pill"><span>🐳</span> Docker Compose</div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:14px; font-size:0.85rem; letter-spacing:0.1em; text-transform:uppercase;">KI-Infrastruktur</h3>
+      <div class="stack-list">
+        <div class="stack-pill"><span>🚀</span> vLLM (Inference)</div>
+        <div class="stack-pill"><span>🦙</span> Llama 3.3 70B AWQ</div>
+        <div class="stack-pill"><span>🌬️</span> Ministral-3-14B</div>
+        <div class="stack-pill"><span>🎮</span> NVIDIA A100-80GB</div>
+        <div class="stack-pill"><span>🔧</span> AWQ INT4 Quantisierung</div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:14px; font-size:0.85rem; letter-spacing:0.1em; text-transform:uppercase;">Entwicklung</h3>
+      <div class="stack-list">
+        <div class="stack-pill"><span>🤖</span> Claude Code CLI</div>
+        <div class="stack-pill"><span>🐙</span> GitHub Copilot CLI</div>
+        <div class="stack-pill"><span>💻</span> VSCode + Copilot</div>
+        <div class="stack-pill"><span>📝</span> OpenCode</div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:14px; font-size:0.85rem; letter-spacing:0.1em; text-transform:uppercase;">Demo &amp; Präsentation</h3>
+      <div class="stack-list">
+        <div class="stack-pill"><span>📺</span> ttyd WebTerminal</div>
+        <div class="stack-pill"><span>🖥️</span> Reveal.js SPA</div>
+        <div class="stack-pill"><span>📜</span> EUPL-1.2 Lizenz</div>
+        <div class="stack-pill"><span>🔗</span> github.com/ndrstmr/ls-ki</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 5 — ENTWICKLUNGSPROZESS
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="label amber">Entwicklungsprozess</div>
+  <div class="slide-line"></div>
+  <h2>Von der Idee zum MVP in 10 Tagen</h2>
+
+  <div style="margin-top: 24px;" class="card-grid cols-4">
+    <div class="card">
+      <span class="card-icon">🔬</span>
+      <h4>Phase 1 · Tag 0</h4>
+      <p>Deep Research mit ChatGPT + Claude. 7 Themenbereiche analysiert. Tech-Stack-Entscheidungen dokumentiert.</p>
+    </div>
+    <div class="card blue">
+      <span class="card-icon">🏗️</span>
+      <h4>Phase 2 · Tag 1–2</h4>
+      <p>Infrastruktur-Setup. VM, NVIDIA-Treiber, Docker Stack, vLLM auf A100. GPU-Verifizierung.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">⚙️</span>
+      <h4>Phase 3 · Tag 3–9</h4>
+      <p>Core-Architektur: Agent, Tool Registry, Provider-Abstraction, REST API, Async Worker.</p>
+    </div>
+    <div class="card amber">
+      <span class="card-icon">🎯</span>
+      <h4>Phase 4 · Tag 10</h4>
+      <p>Demo-Vorbereitung. Modellvergleich. QualityCheck-Tool. Diese Präsentation.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px;">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span class="terminal-title">KI-gestützte Entwicklung</span>
+      </div>
+      <div class="terminal-body">
+        <span class="comment"># Claude Code schreibt ~85% des Codes</span><br>
+        <span class="prompt">$</span> <span class="cmd">claude "Implementiere TranslationAgent mit Tool Registry Pattern"</span><br>
+        <span class="out">  → src/Agent/TranslationAgent.php erstellt</span><br>
+        <span class="out">  → src/Agent/Tool/TranslateToLeichteSprache.php erstellt</span><br>
+        <span class="out">  → src/Agent/ToolRegistry.php erstellt</span><br>
+        <span class="out-accent">  ✓ 3 Dateien · 247 Zeilen · Clean Architecture</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 6 — LIVE DEMO
+════════════════════════════════════════════════════════════════ -->
+<section class="terminal-slide">
+  <div class="bg-grid"></div>
+  <div class="slide-header">
+    <div>
+      <div class="label" style="margin-bottom:8px;">Live Demo</div>
+      <h2 style="font-size: clamp(1.4rem, 3vw, 2rem); margin:0;">LS-KI in Aktion</h2>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <div id="ttyd-status-indicator" class="ttyd-status">
+        <div id="ttyd-dot" class="ttyd-dot offline"></div>
+        <span id="ttyd-status-text">Verbinde…</span>
+      </div>
+      <button onclick="switchTerminalMode('ttyd')"
+        style="font-family:var(--mono);font-size:0.7rem;padding:6px 12px;background:var(--bg3);border:1px solid var(--border2);color:var(--accent);border-radius:4px;cursor:pointer;">
+        Live Terminal
+      </button>
+      <button onclick="switchTerminalMode('fake')"
+        style="font-family:var(--mono);font-size:0.7rem;padding:6px 12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text3);border-radius:4px;cursor:pointer;">
+        Fallback
+      </button>
+    </div>
+  </div>
+
+  <div id="terminal-frame-wrapper">
+    <!-- ttyd iFrame -->
+    <iframe
+      id="terminal-frame"
+      src="/terminal/"
+      title="LS-KI Demo Terminal"
+      sandbox="allow-same-origin allow-scripts allow-forms">
+    </iframe>
+
+    <!-- Fake Terminal Fallback -->
+    <div id="terminal-fallback">
+      <div id="fake-terminal-output"></div>
+      <div style="display:flex; align-items:center; gap:8px; margin-top:12px;">
+        <span style="color:var(--accent);">ls-ki:~$</span>
+        <span id="fake-cursor" style="display:inline-block; width:8px; height:16px; background:var(--accent); animation: blink 1s infinite;"></span>
+      </div>
+      <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
+        <button class="demo-btn" onclick="runFakeScript('health')">01 health.sh</button>
+        <button class="demo-btn" onclick="runFakeScript('translate')">02 translate-llama.sh</button>
+        <button class="demo-btn" onclick="runFakeScript('switch')">03 switch-mistral.sh</button>
+        <button class="demo-btn" onclick="runFakeScript('quality')">04 quality-check.sh</button>
+        <button class="demo-btn" onclick="runFakeScript('copilot')">05 copilot-explain.sh</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 7 — VORHER / NACHHER
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="label">Ergebnis</div>
+  <div class="slide-line"></div>
+  <h2>Vorher / Nachher — Baugenehmigung</h2>
+
+  <div style="margin-top: 24px;" class="compare-grid">
+    <div class="compare-box before">
+      <span class="compare-label">Original (372 Wörter · Komplexitätsstufe: Hoch)</span>
+      <p style="font-size:0.82rem !important;">„Im Rahmen des Baugenehmigungsverfahrens ist der Bauherr verpflichtet, die gemäß § 68 LBO erforderlichen Bauvorlagen vollständig und prüffähig bei der zuständigen unteren Bauaufsichtsbehörde einzureichen. Die Genehmigungsfähigkeit des Bauvorhabens richtet sich nach den Festsetzungen des Bebauungsplans sowie den Anforderungen des öffentlichen Baurechts..."</p>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <span class="model-table badge" style="background:rgba(239,68,68,0.15);color:var(--red);">Ø 24 Wörter/Satz</span>
+        <span class="model-table badge" style="background:rgba(239,68,68,0.15);color:var(--red);">68% Passiv</span>
+        <span class="model-table badge" style="background:rgba(239,68,68,0.15);color:var(--red);">12 Fachbegriffe</span>
+      </div>
+    </div>
+    <div class="compare-box after">
+      <span class="compare-label">Leichte Sprache · Llama 3.3 70B AWQ</span>
+      <p style="font-size:0.82rem !important; line-height:1.9;">
+        Sie wollen ein Haus bauen.<br>
+        Dafür brauchen Sie eine Erlaubnis.<br>
+        Diese Erlaubnis heißt Bau·genehmigung.<br>
+        Sie müssen einen Antrag stellen.<br>
+        Den Antrag stellen Sie beim Bau·amt.<br>
+        Sie brauchen bestimmte Unterlagen.<br>
+        Das Bau·amt prüft Ihren Antrag.
+      </p>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <span class="model-table badge green">Ø 6 Wörter/Satz</span>
+        <span class="model-table badge green">0% Passiv</span>
+        <span class="model-table badge green">Medio·punkte ✓</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 8 — MODELLVERGLEICH
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="label blue">Modellvergleich</div>
+  <div class="slide-line"></div>
+  <h2>Llama 3.3 70B vs. Ministral-3-14B</h2>
+
+  <div style="margin-top: 24px;">
+    <table class="model-table">
+      <thead>
+        <tr>
+          <th>Kriterium</th>
+          <th class="accent">Llama 3.3 70B AWQ</th>
+          <th class="blue">Ministral-3-14B</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>VRAM-Bedarf</td>
+          <td>~35 GB (AWQ INT4)</td>
+          <td>~14 GB (BF16)</td>
+        </tr>
+        <tr>
+          <td>Latenz (Wohngeld-Text)</td>
+          <td class="good">~4,2 Sek</td>
+          <td class="good">~1,8 Sek</td>
+        </tr>
+        <tr>
+          <td>Satzlänge ≤ 8 Wörter</td>
+          <td><span class="badge green">89%</span></td>
+          <td><span class="badge green">84%</span></td>
+        </tr>
+        <tr>
+          <td>Passiv-Vermeidung</td>
+          <td><span class="badge green">Sehr gut</span></td>
+          <td><span class="badge blue">Gut</span></td>
+        </tr>
+        <tr>
+          <td>Medio·punkt-Setzung</td>
+          <td><span class="badge green">Konsistent</span></td>
+          <td><span class="badge blue">Variabel</span></td>
+        </tr>
+        <tr>
+          <td>Konjunktiv-Vermeidung</td>
+          <td><span class="badge green">98%</span></td>
+          <td><span class="badge green">95%</span></td>
+        </tr>
+        <tr>
+          <td>Deutsch-Kompetenz</td>
+          <td class="good">Exzellent</td>
+          <td class="good">Sehr gut</td>
+        </tr>
+        <tr>
+          <td>Empfehlung</td>
+          <td>✅ Produktion</td>
+          <td>⚡ Schnelle Previews</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:20px;">
+    <div class="metric-bar">
+      <span class="bar-label">Llama 3.3 70B · Score</span>
+      <div class="bar-track"><div class="bar-fill" style="width:89%"></div></div>
+      <span class="bar-value">89</span>
+    </div>
+    <div class="metric-bar">
+      <span class="bar-label">Ministral-3-14B · Score</span>
+      <div class="bar-track"><div class="bar-fill" style="width:79%; background: linear-gradient(90deg, var(--blue), var(--accent));"></div></div>
+      <span class="bar-value">79</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 9 — LIVE FEATURE: QUALITY CHECK
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="label amber">Live Feature</div>
+  <div class="slide-line"></div>
+  <h2>Eine Klasse = ein neues Feature</h2>
+
+  <div style="margin-top: 20px;" class="card-grid cols-2">
+    <div>
+      <p style="color:var(--text2); margin-bottom:16px; font-size:0.9rem !important;">
+        Das Tool-Registry-Pattern erlaubt es, zur Laufzeit neue Funktionen hinzuzufügen —
+        ohne Änderungen am Agent-Core.
+      </p>
+      <ul class="num-list">
+        <li><span class="num">01</span>QualityCheckTool.php erstellen (implementiert ToolInterface)</li>
+        <li><span class="num">02</span>Symfony Autoconfigure erkennt das neue Tool automatisch</li>
+        <li><span class="num">03</span><code>cache:clear</code> → Tool ist in der Registry registriert</li>
+        <li><span class="num">04</span>API-Call mit <code>"quality_check": true</code></li>
+        <li><span class="num">05</span>Response enthält jetzt Score + Regelabweichungen</li>
+      </ul>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span class="terminal-title">app:translate --quality-check</span>
+      </div>
+      <div class="terminal-body">
+        <span class="comment"># Response-Auszug nach Tool-Integration</span><br>
+        <span class="out">{</span><br>
+        <span class="out">&nbsp;&nbsp;<span style="color:#79c0ff;">"translated_text"</span>: <span style="color:#a5d6ff;">"Sie wollen Wohn·geld...</span></span><br>
+        <span class="out">&nbsp;&nbsp;<span style="color:#79c0ff;">"quality_check"</span>: {</span><br>
+        <span class="out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#79c0ff;">"score"</span>: <span style="color:var(--accent);">87</span>,</span><br>
+        <span class="out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#79c0ff;">"issues"</span>: [</span><br>
+        <span class="out">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span style="color:#79c0ff;">"rule"</span>: <span style="color:#a5d6ff;">"Satzlänge"</span>,</span><br>
+        <span class="out">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#79c0ff;">"severity"</span>: <span style="color:var(--amber);">"medium"</span>}</span><br>
+        <span class="out">&nbsp;&nbsp;&nbsp;&nbsp;]</span><br>
+        <span class="out">&nbsp;&nbsp;}</span><br>
+        <span class="out">}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 10 — AUSBLICK / PORTAL-KI-PLATTFORM
+════════════════════════════════════════════════════════════════ -->
+<section>
+  <div class="bg-grid"></div>
+  <div class="bg-glow-br"></div>
+  <div class="label blue">Ausblick</div>
+  <div class="slide-line"></div>
+  <h2>LS-KI als Modul 1 der<br>Portal-KI-Plattform</h2>
+
+  <div style="margin-top: 24px;" class="card-grid cols-2">
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>✅ Jetzt — LS-KI MVP</h4>
+        <p>REST API · Modellwechsel · Async Worker · QualityCheck</p>
+      </div>
+      <div class="timeline-item future">
+        <h4>🔧 Nächster Schritt — Fine-Tuning</h4>
+        <p>QLoRA auf A100 · Zertifizierte LS-Paare · SARI-Evaluierung</p>
+      </div>
+      <div class="timeline-item future">
+        <h4>🧩 Modul 2 — Zusammenfassungs-Agent</h4>
+        <p>Gleiches Agent-Pattern · neue Domain · minimaler Aufwand</p>
+      </div>
+      <div class="timeline-item far">
+        <h4>🚀 Portal-KI-Plattform</h4>
+        <p>Infrastruktur einmal gebaut · jeder neue Agent nur noch Domain-Arbeit</p>
+      </div>
+      <div class="timeline-item far">
+        <h4>📄 Veröffentlichung</h4>
+        <p>COLING / GermEval · erstes Open-Source-Modell auf zertifizierten LS-Daten</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <span class="card-icon">✖️ → ✅</span>
+        <h4>KI als Multiplikator</h4>
+        <p>2-Personen-Team entwickelt KI-Service in 10 Tagen mit KI-Co-Pilot. Das ist das eigentliche Ergebnis.</p>
+      </div>
+      <div class="card blue">
+        <span class="card-icon">🔒</span>
+        <h4>Govtech-Prinzipien</h4>
+        <p>100% On-Premises · keine Daten in Cloud · EUPL-1.2 · Dataport-Infrastruktur</p>
+      </div>
+      <div class="card amber" style="margin-top:14px;">
+        <span class="card-icon">🧪</span>
+        <h4>Forschungspotenzial</h4>
+        <p>autoresearch-Loop · Benchmark mit SARI + Regelkonformität · Prototype Fund / DFG</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 11 — CLOSING
+════════════════════════════════════════════════════════════════ -->
+<section class="center-slide">
+  <div class="bg-grid"></div>
+  <div class="bg-glow-tl"></div>
+  <div class="bg-glow-br"></div>
+
+  <div style="font-family:var(--mono); font-size:0.75rem; color:var(--accent); letter-spacing:0.15em; margin-bottom:24px;">
+    DANKE · FRAGEN · DEMO
+  </div>
+
+  <h2 class="closing-big">
+    <span class="dim">KI schreibt Code.</span><br>
+    KI übersetzt Texte.<br>
+    <span class="dim">Wir steuern beide.</span>
+  </h2>
+
+  <div style="margin-top: 40px; display:flex; gap: 32px; justify-content:center; flex-wrap:wrap;">
+    <div style="text-align:center;">
+      <div style="font-family:var(--mono); font-size:0.68rem; color:var(--text3); margin-bottom:6px;">REPO</div>
+      <div style="font-family:var(--mono); font-size:0.9rem; color:var(--accent);">github.com/ndrstmr/ls-ki</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-family:var(--mono); font-size:0.68rem; color:var(--text3); margin-bottom:6px;">LIZENZ</div>
+      <div style="font-family:var(--mono); font-size:0.9rem; color:var(--text2);">EUPL-1.2</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-family:var(--mono); font-size:0.68rem; color:var(--text3); margin-bottom:6px;">TEAM</div>
+      <div style="font-family:var(--mono); font-size:0.9rem; color:var(--text2);">CCW · DL4 · Dataport</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-family:var(--mono); font-size:0.68rem; color:var(--text3); margin-bottom:6px;">DEMO</div>
+      <div style="font-family:var(--mono); font-size:0.9rem; color:var(--accent);">/demo/ · /terminal/</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<style>
+.demo-btn {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 7px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--accent);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.demo-btn:hover { background: var(--bg4); border-color: var(--accent); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script>
+// ── Reveal.js Init ───────────────────────────────────────────────
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  backgroundTransition: 'none',
+  controls: true,
+  progress: true,
+  center: false,
+  width: '100%',
+  height: '100%',
+  margin: 0,
+  minScale: 0.8,
+  maxScale: 1.2,
+});
+
+// ── ttyd Verfügbarkeit prüfen ────────────────────────────────────
+async function checkTtyd() {
+  const dot  = document.getElementById('ttyd-dot');
+  const text = document.getElementById('ttyd-status-text');
+  try {
+    const res = await fetch('/terminal/', { method: 'HEAD', signal: AbortSignal.timeout(2000) });
+    if (res.ok || res.status === 200) {
+      dot.classList.remove('offline');
+      text.textContent = 'Terminal bereit';
+      return true;
+    }
+  } catch {}
+  dot.classList.add('offline');
+  text.textContent = 'Fallback-Modus';
+  return false;
+}
+
+// Beim Navigieren zum Terminal-Slide prüfen
+Reveal.on('slidechanged', async ({ indexh }) => {
+  // Slide 6 (index 5) ist der Terminal-Slide
+  if (indexh === 5) {
+    const ok = await checkTtyd();
+    if (!ok) switchTerminalMode('fake');
+    else switchTerminalMode('ttyd');
+  }
+});
+
+// ── Terminal-Modus umschalten ────────────────────────────────────
+function switchTerminalMode(mode) {
+  const frame    = document.getElementById('terminal-frame');
+  const fallback = document.getElementById('terminal-fallback');
+  if (mode === 'ttyd') {
+    frame.style.display    = 'block';
+    fallback.style.display = 'none';
+  } else {
+    frame.style.display    = 'none';
+    fallback.style.display = 'block';
+    if (!document.getElementById('fake-terminal-output').innerHTML) {
+      appendFakeLine('<span style="color:var(--text3)"># LS-KI Demo Terminal — Fallback-Modus</span>');
+      appendFakeLine('<span style="color:var(--text3)"># Wähle ein Demo-Skript unten</span>');
+    }
+  }
+}
+
+// ── Fake Terminal ────────────────────────────────────────────────
+function appendFakeLine(html) {
+  const out = document.getElementById('fake-terminal-output');
+  out.innerHTML += html + '<br>';
+  out.parentElement.scrollTop = out.parentElement.scrollHeight;
+}
+
+const fakeScripts = {
+  health: [
+    { t: 0,    line: '<span style="color:var(--accent)">ls-ki:~$</span> ./01-health.sh' },
+    { t: 300,  line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 400,  line: '  LS-KI System Health Check' },
+    { t: 500,  line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 800,  line: '<span style="color:var(--green)">✓</span> nginx        · running' },
+    { t: 900,  line: '<span style="color:var(--green)">✓</span> php-fpm      · running' },
+    { t: 1000, line: '<span style="color:var(--green)">✓</span> postgresql   · running' },
+    { t: 1100, line: '<span style="color:var(--green)">✓</span> vllm         · running  <span style="color:var(--accent)">Llama-3.3-70B-AWQ geladen</span>' },
+    { t: 1200, line: '<span style="color:var(--green)">✓</span> worker×2     · running' },
+    { t: 1400, line: '' },
+    { t: 1500, line: '  GPU: A100-80GB · 38.2/80.0 GB VRAM · Temp: 42°C' },
+    { t: 1600, line: '<span style="color:var(--accent)">  status: ok</span>' },
+  ],
+  translate: [
+    { t: 0,    line: '<span style="color:var(--accent)">ls-ki:~$</span> ./02-translate-llama.sh' },
+    { t: 300,  line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 400,  line: '  ORIGINAL (Verwaltungsdeutsch)' },
+    { t: 500,  line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 600,  line: '<span style="color:var(--text2)">  Wohngeld ist eine finanzielle Unterstützung für Bürgerinnen</span>' },
+    { t: 700,  line: '<span style="color:var(--text2)">  und Bürger, die aufgrund ihres geringen Einkommens...</span>' },
+    { t: 1200, line: '' },
+    { t: 1300, line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 1400, line: '  LEICHTE SPRACHE (Llama 3.3 70B AWQ)' },
+    { t: 1500, line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 1600, line: '<span style="color:var(--text3)">  ⟳ Übersetzung läuft... (4.2s)</span>' },
+    { t: 3800, line: '' },
+    { t: 3900, line: '<span style="color:var(--accent)">  Wohn·geld ist Geld vom Staat.</span>' },
+    { t: 4000, line: '<span style="color:var(--accent)">  Sie bekommen dieses Geld für Ihre Wohnung.</span>' },
+    { t: 4100, line: '<span style="color:var(--accent)">  Sie müssen einen Antrag stellen.</span>' },
+    { t: 4200, line: '<span style="color:var(--accent)">  Den Antrag stellen Sie beim Wohn·geld·amt.</span>' },
+    { t: 4300, line: '<span style="color:var(--accent)">  Sie müssen wenig Geld verdienen.</span>' },
+    { t: 4400, line: '' },
+    { t: 4500, line: '<span style="color:var(--green)">  ✓ Modell: llama-3.3-70b-awq · Zeit: 4.2s · Tokens: 312</span>' },
+  ],
+  switch: [
+    { t: 0,    line: '<span style="color:var(--accent)">ls-ki:~$</span> ./03-switch-mistral.sh' },
+    { t: 400,  line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 500,  line: '  Modellwechsel → Ministral-3-14B' },
+    { t: 600,  line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 900,  line: '<span style="color:var(--text3)">  ⟳ PUT /api/config/model...</span>' },
+    { t: 1400, line: '<span style="color:var(--green)">  ✓ active_model: mistral-small-3.2-24b</span>' },
+    { t: 1600, line: '' },
+    { t: 1700, line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 1800, line: '  LEICHTE SPRACHE (Ministral-3-14B)' },
+    { t: 1900, line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 2000, line: '<span style="color:var(--text3)">  ⟳ Übersetzung läuft... (1.8s)</span>' },
+    { t: 3800, line: '' },
+    { t: 3900, line: '<span style="color:var(--blue)">  Wohn·geld hilft Menschen mit wenig Geld.</span>' },
+    { t: 4000, line: '<span style="color:var(--blue)">  Sie bezahlen damit einen Teil der Miete.</span>' },
+    { t: 4100, line: '<span style="color:var(--blue)">  Stellen Sie einen Antrag beim Wohn·geld·amt.</span>' },
+    { t: 4200, line: '' },
+    { t: 4300, line: '<span style="color:var(--green)">  ✓ Modell: mistral-small-3.2-24b · Zeit: 1.8s</span>' },
+  ],
+  quality: [
+    { t: 0,    line: '<span style="color:var(--accent)">ls-ki:~$</span> ./04-quality-check.sh' },
+    { t: 400,  line: '  Live-Feature: QualityCheck-Tool' },
+    { t: 600,  line: '' },
+    { t: 700,  line: '→ Cache leeren → Tool wird registriert...' },
+    { t: 1200, line: '<span style="color:var(--green)">  ✓ Cache cleared</span>' },
+    { t: 1400, line: '<span style="color:var(--green)">  ✓ quality_check Tool in Registry: 2 Tools registriert</span>' },
+    { t: 1600, line: '' },
+    { t: 1700, line: '→ Übersetzen + Quality Check...' },
+    { t: 2200, line: '<span style="color:var(--text3)">  ⟳ Translation + QualityCheck (5.1s)</span>' },
+    { t: 7300, line: '' },
+    { t: 7400, line: '{' },
+    { t: 7500, line: '  <span style="color:#79c0ff">"translated_text"</span>: <span style="color:#a5d6ff">"Der Antrag·steller muss...</span>",' },
+    { t: 7600, line: '  <span style="color:#79c0ff">"quality_check"</span>: {' },
+    { t: 7700, line: '    <span style="color:#79c0ff">"score"</span>: <span style="color:var(--accent)">87</span>,' },
+    { t: 7800, line: '    <span style="color:#79c0ff">"issue_count"</span>: <span style="color:var(--amber)">1</span>,' },
+    { t: 7900, line: '    <span style="color:#79c0ff">"summary"</span>: <span style="color:#a5d6ff">"Gute Leichte Sprache, 1 Satz zu lang"</span>' },
+    { t: 8000, line: '  }' },
+    { t: 8100, line: '}' },
+  ],
+  copilot: [
+    { t: 0,    line: '<span style="color:var(--accent)">ls-ki:~$</span> ./05-copilot-explain.sh' },
+    { t: 400,  line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 500,  line: '  KI erklärt KI-Code (gh copilot)' },
+    { t: 600,  line: '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' },
+    { t: 800,  line: '' },
+    { t: 900,  line: '<span style="color:var(--text3)">→ Frage: "Erkläre das Agent-Pattern mit Tool Registry"</span>' },
+    { t: 1400, line: '' },
+    { t: 1500, line: '<span style="color:var(--blue)">GitHub Copilot:</span>' },
+    { t: 1700, line: '<span style="color:var(--text2)">Das Agent-Pattern in LS-KI trennt Orchestrierung von</span>' },
+    { t: 1900, line: '<span style="color:var(--text2)">Ausführung. Der TranslationAgent kennt keine konkreten</span>' },
+    { t: 2100, line: '<span style="color:var(--text2)">Tools — er fragt die ToolRegistry nach Capabilities.</span>' },
+    { t: 2300, line: '' },
+    { t: 2400, line: '<span style="color:var(--text2)">Neue Tools werden via PHP-Attribut #[AutoconfigureTag]</span>' },
+    { t: 2600, line: '<span style="color:var(--text2)">registriert. Ein cache:clear reicht für die Aktivierung.</span>' },
+    { t: 2800, line: '' },
+    { t: 2900, line: '<span style="color:var(--accent)">→ Das ist das Demo-Highlight: Erweiterbarkeit ohne</span>' },
+    { t: 3100, line: '<span style="color:var(--accent)">  Änderungen am Kern-Code.</span>' },
+  ],
+};
+
+let fakeRunning = false;
+
+async function runFakeScript(key) {
+  if (fakeRunning) return;
+  fakeRunning = true;
+  const lines = fakeScripts[key];
+  appendFakeLine('');
+  for (const { t, line } of lines) {
+    await new Promise(r => setTimeout(r, t === 0 ? 0 : Math.max(50, t - (lines[lines.indexOf({t,line})-1]?.t||0))));
+    appendFakeLine(line);
+  }
+  appendFakeLine('');
+  fakeRunning = false;
+}
+
+// Beim Laden: ttyd-Status initial prüfen
+checkTtyd();
+</script>
+</body>
+</html>

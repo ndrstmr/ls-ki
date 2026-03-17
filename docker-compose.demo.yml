@@ -1,0 +1,61 @@
+# docker-compose.demo.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# Demo-Overlay für CuP&Connect-Präsentation
+#
+# Starten mit:
+#   docker compose -f docker-compose.yml -f docker-compose.llama-70b.yml \
+#                  -f docker-compose.demo.yml up -d
+#
+# Oder mit Makefile:
+#   make up-demo
+#
+# Danach erreichbar unter:
+#   http://<vm-ip>/demo/          → Reveal.js SPA-Präsentation
+#   http://<vm-ip>/terminal/      → ttyd WebTerminal
+#
+# Hinweis: Dieser Overlay beeinträchtigt den laufenden API-Stack nicht.
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── ttyd: WebSocket-Terminal ────────────────────────────────────────────────
+  ttyd:
+    build:
+      context: ./docker/ttyd
+      dockerfile: Dockerfile
+    container_name: ls-ki-ttyd
+    restart: unless-stopped
+    volumes:
+      # Docker-Socket für docker compose / docker exec in der Demo
+      - /var/run/docker.sock:/var/run/docker.sock
+      # GitHub CLI Konfiguration (Token persistieren)
+      - ttyd_gh_config:/root/.config/gh
+      # Projekt-Source für Copilot-Kontext (read-only)
+      - ./src:/app/src:ro
+      # Demo-Fallback-Outputs
+      - ./docs/demo:/opt/demo-outputs:ro
+    environment:
+      # GitHub Token für gh CLI + gh copilot
+      # Setzen via: echo "GITHUB_TOKEN=ghp_..." >> .env.demo  (nicht ins Repo!)
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GH_TOKEN=${GITHUB_TOKEN:-}
+    networks:
+      - frontend
+    expose:
+      - "7681"
+    labels:
+      - "ls-ki.role=demo-terminal"
+      - "ls-ki.description=ttyd WebTerminal für CuP&Connect Demo"
+
+  # ── Nginx: Demo-Routen ergänzen ─────────────────────────────────────────────
+  # Erweitert die bestehende Nginx-Konfiguration um /demo/ und /terminal/
+  nginx:
+    volumes:
+      # Demo-SPA als statische Dateien
+      - ./docs/demo:/var/www/html/demo:ro
+      # Nginx-Konfiguration für Demo-Routen
+      - ./docker/nginx/demo.conf:/etc/nginx/conf.d/demo.conf:ro
+
+volumes:
+  ttyd_gh_config:
+    name: ls-ki-ttyd-gh-config
