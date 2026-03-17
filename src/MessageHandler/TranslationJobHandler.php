@@ -44,7 +44,7 @@ final class TranslationJobHandler
         }
 
         $sourceFile = basename($message->inputFilePath);
-        $result = $this->translationAgent->translate($inputText, $message->jobId);
+        $result = $this->translationAgent->translate($inputText, $message->jobId, $message->qualityCheck);
 
         $this->jobStorage->storeCompletedJob(
             jobId: $message->jobId,

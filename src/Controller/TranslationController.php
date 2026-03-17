@@ -87,6 +87,7 @@ final class TranslationController extends AbstractController
         $this->messageBus->dispatch(new TranslationJobMessage(
             jobId: $jobId,
             inputFilePath: $inputFile,
+            qualityCheck: $dto->qualityCheck,
         ));
 
         return $this->json([
